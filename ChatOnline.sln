@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31105.61
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatOnline", "ChatOnline\ChatOnline.csproj", "{7077D661-2692-499E-977C-659EBFC9B245}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7077D661-2692-499E-977C-659EBFC9B245}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7077D661-2692-499E-977C-659EBFC9B245}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7077D661-2692-499E-977C-659EBFC9B245}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7077D661-2692-499E-977C-659EBFC9B245}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D7AC6896-26F9-4576-8F7A-E72B1141C118}
+	EndGlobalSection
+EndGlobal
