@@ -17,13 +17,15 @@ namespace ChatOnline
 {
     class ViewApplication : INotifyPropertyChanged
     {
-        static string Name = "User";
-        string msg;
-        public Dispatcher Dispatcher { get; set; }
+        static Random random = new Random();
 
-        private ObservableCollection<string> msgBox;
+        public User user = new User();
+        User temp = new User();
+        public Dispatcher MyDispatcher { get; set; }
+
+        private ObservableCollection<User> msgBox;
         private ObservableCollection<string> userBox;
-        public ObservableCollection<string> MsgBox
+        public ObservableCollection<User> MsgBox
         { 
             get => msgBox; 
             set
@@ -41,14 +43,16 @@ namespace ChatOnline
         }
 
 
-        static TcpClient client;
-        static NetworkStream stream;
+        public static TcpClient client;
+        public static NetworkStream stream;
 
         public ViewApplication()
         {
-            msgBox = new ObservableCollection<string>();
+            user.Name = random.Next(100).ToString();
+            msgBox = new ObservableCollection<User>();
+            userBox = new ObservableCollection<string>();
             client = new TcpClient();
-            this.Dispatcher = Dispatcher.CurrentDispatcher;
+            this.MyDispatcher = Dispatcher.CurrentDispatcher;
             Connect();
         }
         private void Connect()
@@ -56,8 +60,10 @@ namespace ChatOnline
             client.Connect("127.0.0.1",8000);
             stream = client.GetStream();
 
-            byte[] data = Encoding.Unicode.GetBytes(Name);
+            byte[] data = Encoding.Unicode.GetBytes(user.Name);
             stream.Write(data, 0, data.Length);
+            UserBox.Add(user.Name);
+
 
             Thread receiveThread = new Thread(new ThreadStart(ReceiveMsg));
             receiveThread.Start();
@@ -68,19 +74,32 @@ namespace ChatOnline
         {
             try
             {
+                byte[] id = new byte[64];
+                stream.Read(id,0,id.Length);
+                user.ID = Encoding.Unicode.GetString(id, 0, id.Length).Trim('\0');
+
+
                 while (true)
                 {
-                    byte[] data = new byte[64];
-                    StringBuilder builder = new StringBuilder();
+                    byte[] data = new byte[1024];
                     int bytes = 0;
                     do
                     {
                         bytes = stream.Read(data, 0, data.Length);
-                        builder.Append(Encoding.Unicode.GetString(data, 0, bytes));
+                        temp.Desserialize(data);
 
                     } while (stream.DataAvailable);
 
-                    Dispatcher.CurrentDispatcher.Invoke(() => { MsgBox.Add(builder.ToString()); });
+
+
+
+                    if (temp.SendMessage)
+                    {
+                      MyDispatcher.Invoke(() =>
+                      {
+                            MsgBox.Add(temp);
+                      });
+                    }
                    
                 }
                 
@@ -95,9 +114,9 @@ namespace ChatOnline
         public ICommand Send => new DelegateCommand(() => SendMsg());
         public void SendMsg()
         {
-            if (msg != "")
+            if (!string.IsNullOrEmpty(user.Message))
             {
-                byte[] data = Encoding.Unicode.GetBytes(msg);
+                byte[] data = user.Serialize();
                 stream.Write(data, 0, data.Length);
             }
 

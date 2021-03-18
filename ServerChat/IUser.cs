@@ -9,11 +9,13 @@ namespace ServerChat
     interface IUser
     {
         string ID { get; set; }
-        string Name {get; set;}
+        string Name { get; set; }
         bool ConnectClient { get; set; }
         bool DisconnectClient { get; set; }
         bool SendFile { get; set; }
         bool SendMessage { get; set; }
         string Message { get; set; }
+        byte[] Serialize();
+        void Desserialize(byte[] data);
     }
 }

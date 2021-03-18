@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ServerChat
+namespace ChatOnline
 {
     interface IUser
     {
@@ -15,5 +15,7 @@ namespace ServerChat
         bool SendFile { get; set; }
         bool SendMessage { get; set; }
         string Message { get; set; }
+        byte[] Serialize();
+        void Desserialize(byte[] data);
     }
 }

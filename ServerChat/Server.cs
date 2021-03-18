@@ -19,7 +19,9 @@ namespace ServerChat
     {
         TcpListener tcpListener;
         public Dispatcher Dispatcher { get; set; }
+
         List<ClientUser> clients = new List<ClientUser>();
+
         ObservableCollection<string> message = new ObservableCollection<string>();
         public Server()
         {
@@ -38,12 +40,18 @@ namespace ServerChat
     
         protected internal void AddConnection(ClientUser user)
         {
+
             clients.Add(user);
+            Dispatcher.Invoke(new Action(() => { ListUser.Add("Connect : " + user.User.Name +" "+ DateTime.Now); }));
         }
         protected internal void RemoveConnection(string id)
         {
             ClientUser user = clients.FirstOrDefault(x => x.User.ID == id);
-            if (user != null) clients.Remove(user);
+            if (user != null)
+            { 
+                clients.Remove(user);
+                Dispatcher.Invoke(new Action(() => { ListUser.Add("Disconnect : " + user.User.Name + " " + DateTime.Now); }));
+            }
         }
         protected internal void Listen()
         {
@@ -51,11 +59,13 @@ namespace ServerChat
             {
                 tcpListener = new TcpListener(IPAddress.Parse("127.0.0.1"), 8000);
                 tcpListener.Start();
+
                 while (true)
                 {
 
                    TcpClient client = tcpListener.AcceptTcpClient();
                    ClientUser clientUser = new ClientUser(client,this);
+
                    Thread clientThread = new Thread(new ThreadStart(clientUser.Process));
                    clientThread.Start();
                 }
@@ -79,6 +89,14 @@ namespace ServerChat
             for (int i = 0; i < clients.Count; i++)
             {
                 clients[i].networkStream.Write(data,0,data.Length);
+            }
+        }
+        protected internal void BroadCastUser(User user)
+        {
+            for (int i = 0; i < clients.Count; i++)
+            {
+               byte[]data = clients[i].User.Serialize();
+                clients[i].networkStream.Write(data, 0, data.Length);
             }
         }
         protected internal void Disconnect()

@@ -20,8 +20,7 @@ namespace ServerChat
         {
             this.client = client;
             this.server = server;
-            User.ID = client.Client.RemoteEndPoint.ToString();
-            server.AddConnection(this);
+            User.ID = client.Client.RemoteEndPoint.ToString();   
         }
         internal void Process()
         {
@@ -29,23 +28,25 @@ namespace ServerChat
             {
 
                 networkStream = client.GetStream();
-                User.Name = GetMsg();
-                string msg = User.Name + " " +DateTime.Now.Hour+ ":"+DateTime.Now.Minute;
-                
-                server.BroadCastMsg(msg);
+                byte[] data = new byte[64];
+                networkStream.Read(data, 0, data.Length);
+                User.Name = Encoding.Unicode.GetString(data);
+                server.AddConnection(this);
+
+
+                byte[] id = Encoding.Unicode.GetBytes(user.ID);
+                networkStream.Write(id, 0, id.Length);
+
                 while (true)
                 {
                     try
                     {
-                        msg = GetMsg();
-                        msg = User.Name + " : " + msg;
-                        server.BroadCastMsg(msg);
+                        user.Desserialize(GetMsg());
+                        server.BroadCastUser(User);
                     }
                     catch (Exception ex)
                     {
                         server.RemoveConnection(user.ID);
-                        MessageBox.Show(ex.Message + "Process while()");
-                        
                         Close();
                         break;
                     }
@@ -66,18 +67,17 @@ namespace ServerChat
                 MessageBox.Show(e.Message + "ClientUser Process");
             }
         }
-        private string GetMsg()
+        private byte[] GetMsg()
         {
-            byte[] data = new byte[64];
-            int bytes = 0;
-            StringBuilder builder = new StringBuilder();
+            byte[] data = new byte[1024];
+           
             do
             {
-                bytes = networkStream.Read(data, 0, data.Length);
-                builder.Append(Encoding.Unicode.GetString(data, 0, data.Length));
+                networkStream.Read(data, 0, data.Length);
 
             } while (networkStream.DataAvailable);
-            return builder.ToString();
+
+            return data;
         }
         internal void Close()
         {
