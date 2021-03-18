@@ -5,8 +5,30 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ChatOnline"
         mc:Ignorable="d"
+        xmlns:p="clr-namespace:ChatOnline"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-        
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0.3*"></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <StackPanel>
+            <ListBox Name="listBoxUser" ItemsSource="{Binding UserBox}">
+                <ListBox.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Send file"/>
+                        <MenuItem Header="Private chat"/>
+                    </ContextMenu>
+                </ListBox.ContextMenu>
+            </ListBox>
+        </StackPanel>
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="349"></RowDefinition>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <ListBox ItemsSource="{Binding MsgBox}"/>
+            <TextBox Grid.Row="1" Name="textBoxSend" KeyDown="textBoxSend_KeyDown"/>
+        </Grid>
     </Grid>
 </Window>
