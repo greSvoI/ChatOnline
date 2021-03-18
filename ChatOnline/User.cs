@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media;
 
 namespace ChatOnline
 {
@@ -16,6 +17,9 @@ namespace ChatOnline
         public bool DisconnectClient { get ; set ; }
         public bool SendMessage { get; set ; }
 		public string Message { get; set; } = "";
+		private Brush brush;
+		public Brush Brush { get => brush; set { brush = value; } }
+
 		public byte[] Serialize()
 		{
 			using (MemoryStream m = new MemoryStream())

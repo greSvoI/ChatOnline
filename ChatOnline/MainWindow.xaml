@@ -34,8 +34,11 @@
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{Binding Name}"/>
-                            <TextBlock Background="Silver" Margin="5 0 0 0" Text="{Binding Message}"/>
+                            <TextBlock Padding="4" Text="{Binding Name}"/>
+                            <Border Background="{Binding Brush}" Padding="4" CornerRadius="5">
+                                <TextBlock  Margin="10 0 0 0" Text="{Binding Message}"/>
+                            </Border>
+                            
                         </StackPanel>
                     </DataTemplate>
                 </ListBox.ItemTemplate>

@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace ChatOnline
@@ -20,9 +21,11 @@ namespace ChatOnline
         static Random random = new Random();
 
         private User user;
+       
         public User User { get => user; set { user = value; } }
         User temp = new User();
         public Dispatcher MyDispatcher { get; set; }
+       // public Brush MyBrush { get => User.Brush; set { User.Brush = value; OnPropertyChanged(""); } }
 
         private ObservableCollection<User> msgBox;
         private ObservableCollection<string> userBox;
@@ -51,6 +54,7 @@ namespace ChatOnline
         {
             user = new User();
             User.Name = random.Next(100).ToString();
+            User.Brush = new SolidColorBrush(Colors.LightCoral);
             msgBox = new ObservableCollection<User>();
             userBox = new ObservableCollection<string>();
             client = new TcpClient();
@@ -105,7 +109,7 @@ namespace ChatOnline
                 while (true)
                 {
                     data = new byte[1024];
-                    int bytes = 0;
+                    int bytes = 0;//Пока не удалять будет нужен
                     do
                     {
                         bytes = stream.Read(data, 0, data.Length);
@@ -113,9 +117,9 @@ namespace ChatOnline
 
                     } while (stream.DataAvailable);
 
-                   ;
+                   
 
-                    if (!UserBox.Any(x=>x == temp.Name))
+                    if (!UserBox.Any(x=>x == temp.Name))//Другой вариант temp.Connect==true ? но пока так
                     {
                         MyDispatcher.Invoke(() =>
                         {
@@ -135,12 +139,21 @@ namespace ChatOnline
                         });
                     }
 
-                    if (temp.SendMessage)
+                    if (temp.ID != User.ID && temp.Message!="")
                     {
                       MyDispatcher.Invoke(() =>
                       {
-                            MsgBox.Add(temp);
+                          temp.Brush = new SolidColorBrush(Colors.LightBlue);
+                          MsgBox.Add(temp);
                       });
+                    }
+                    else if(temp.ID == User.ID && temp.Message != "")
+                    {
+                        MyDispatcher.Invoke(() =>
+                        {
+                            User.Message = temp.Message;
+                            MsgBox.Add(User);
+                        });
                     }
                    
                 }
