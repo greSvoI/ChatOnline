@@ -40,18 +40,35 @@ namespace ServerChat
     
         protected internal void AddConnection(ClientUser user)
         {
-
             clients.Add(user);
+            string client = user.User.ID+",";
+            byte[] data = new byte[1024];
+           
+            
+
+            for (int i = 0; i < clients.Count; i++)
+            {
+                client += clients[i].User.Name + ",";
+            }
+
+            data = Encoding.Unicode.GetBytes(client+="*");
+            user.networkStream.Write(data, 0, data.Length);
+           
             Dispatcher.Invoke(new Action(() => { ListUser.Add("Connect : " + user.User.Name +" "+ DateTime.Now); }));
+            user.User.ConnectClient = true;
+            BroadCastUser(user.User);
         }
         protected internal void RemoveConnection(string id)
         {
             ClientUser user = clients.FirstOrDefault(x => x.User.ID == id);
+           
             if (user != null)
-            { 
-                clients.Remove(user);
+            {
+                user.User.DisconnectClient = true;
                 Dispatcher.Invoke(new Action(() => { ListUser.Add("Disconnect : " + user.User.Name + " " + DateTime.Now); }));
             }
+            BroadCastUser(user.User);
+            clients.Remove(user);
         }
         protected internal void Listen()
         {
@@ -73,8 +90,6 @@ namespace ServerChat
             }
             catch (Exception e)
             {
-
-                MessageBox.Show(e.Message + "Server Listen");
                 Disconnect();
             }
         }
@@ -93,9 +108,9 @@ namespace ServerChat
         }
         protected internal void BroadCastUser(User user)
         {
+            byte[] data = user.Serialize();
             for (int i = 0; i < clients.Count; i++)
             {
-               byte[]data = clients[i].User.Serialize();
                 clients[i].networkStream.Write(data, 0, data.Length);
             }
         }

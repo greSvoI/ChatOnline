@@ -29,62 +29,63 @@ namespace ServerChat
 
                 networkStream = client.GetStream();
                 byte[] data = new byte[64];
+
                 networkStream.Read(data, 0, data.Length);
-                User.Name = Encoding.Unicode.GetString(data);
-                server.AddConnection(this);
+                User.Name = Encoding.Unicode.GetString(data).Trim('\0'); //Получаем Имя
 
-
-                byte[] id = Encoding.Unicode.GetBytes(user.ID);
-                networkStream.Write(id, 0, id.Length);
+                server.AddConnection(this);//Отправляем список активных
 
                 while (true)
                 {
                     try
                     {
-                        user.Desserialize(GetMsg());
+                        data = new byte[1024];
+                        data = GetMsg();
+                        if (data == null) Close();
+                        User.Desserialize(data);
                         server.BroadCastUser(User);
                     }
                     catch (Exception ex)
                     {
-                        server.RemoveConnection(user.ID);
-                        Close();
                         break;
                     }
-
-
                 }
-
-
-
-
-
-
 
             }
             catch (Exception e)
             {
-
-                MessageBox.Show(e.Message + "ClientUser Process");
+                //MessageBox.Show(e.Message + "ClientUser Process");
             }
         }
         private byte[] GetMsg()
         {
             byte[] data = new byte[1024];
-           
-            do
+            try
             {
-                networkStream.Read(data, 0, data.Length);
+                do
+                {
+                    if (networkStream.Read(data, 0, data.Length) == 0)
+                        return null;
 
-            } while (networkStream.DataAvailable);
+                } while (networkStream.DataAvailable);
 
-            return data;
+                return data;
+            }
+            catch (Exception)
+            {
+
+                return null;
+            }
+            
         }
         internal void Close()
         {
+            server.RemoveConnection(User.ID);
             if (networkStream != null)
                 networkStream.Close();
             if (client != null)
                 client.Close();
+            
         }
 
 

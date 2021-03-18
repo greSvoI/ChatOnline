@@ -15,7 +15,7 @@ namespace ChatOnline
         public bool ConnectClient { get ; set ; }
         public bool DisconnectClient { get ; set ; }
         public bool SendMessage { get; set ; }
-        public string Message { get ; set; }
+		public string Message { get; set; } = "";
 		public byte[] Serialize()
 		{
 			using (MemoryStream m = new MemoryStream())

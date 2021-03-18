@@ -32,16 +32,15 @@ namespace ChatOnline
 
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            ViewApplication.client?.Close();
-            ViewApplication.stream?.Close();
+            view.Close();
         }
 
         private void textBoxSend_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {
-                view.user.Message = textBoxSend.Text;
-                view.user.SendMessage = true;
+                view.User.Message = textBoxSend.Text;
+                view.User.SendMessage = true;
                 view.Send.Execute(null);
                 textBoxSend.Clear();
             }

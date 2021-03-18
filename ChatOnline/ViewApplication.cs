@@ -19,7 +19,8 @@ namespace ChatOnline
     {
         static Random random = new Random();
 
-        public User user = new User();
+        private User user;
+        public User User { get => user; set { user = value; } }
         User temp = new User();
         public Dispatcher MyDispatcher { get; set; }
 
@@ -48,7 +49,8 @@ namespace ChatOnline
 
         public ViewApplication()
         {
-            user.Name = random.Next(100).ToString();
+            user = new User();
+            User.Name = random.Next(100).ToString();
             msgBox = new ObservableCollection<User>();
             userBox = new ObservableCollection<string>();
             client = new TcpClient();
@@ -60,9 +62,6 @@ namespace ChatOnline
             client.Connect("127.0.0.1",8000);
             stream = client.GetStream();
 
-            byte[] data = Encoding.Unicode.GetBytes(user.Name);
-            stream.Write(data, 0, data.Length);
-            UserBox.Add(user.Name);
 
 
             Thread receiveThread = new Thread(new ThreadStart(ReceiveMsg));
@@ -74,14 +73,38 @@ namespace ChatOnline
         {
             try
             {
-                byte[] id = new byte[64];
-                stream.Read(id,0,id.Length);
-                user.ID = Encoding.Unicode.GetString(id, 0, id.Length).Trim('\0');
+
+                byte[] data = new byte[64];
+                data = Encoding.Unicode.GetBytes(User.Name);
+                stream.Write(data, 0, data.Length);//Отправляем имя
+
+                data = new byte[1024];
+
+                stream.Read(data, 0, data.Length);//Активных клиентов
+
+                string temps = Encoding.Unicode.GetString(data, 0, data.Length);
+                string []client = temps.Split(',');
+
+                
+
+                this.User.ID = client[0];
+
+                for (int i = 1; i < client.Length; i++)
+                {
+                    client[i].Trim('\0');
+                    if(!client[i].StartsWith("*"))
+                        MyDispatcher.Invoke(() =>
+                        {
+                            UserBox.Add(client[i]);
+                        });
+                }
+
+
 
 
                 while (true)
                 {
-                    byte[] data = new byte[1024];
+                    data = new byte[1024];
                     int bytes = 0;
                     do
                     {
@@ -90,8 +113,27 @@ namespace ChatOnline
 
                     } while (stream.DataAvailable);
 
+                   ;
 
+                    if (!UserBox.Any(x=>x == temp.Name))
+                    {
+                        MyDispatcher.Invoke(() =>
+                        {
+                            UserBox.Add(temp.Name);
+                        });
+                        temp.ConnectClient = false;
+                    }
 
+                    if(temp.DisconnectClient)
+                    {
+                        MyDispatcher.Invoke(() =>
+                        {
+                            temp.Message = "Bye";
+                            MsgBox.Add(temp);
+                            UserBox.Remove(temp.Name);
+                           
+                        });
+                    }
 
                     if (temp.SendMessage)
                     {
@@ -106,8 +148,7 @@ namespace ChatOnline
             }
             catch (Exception e)
             {
-
-                MessageBox.Show(e.Message + "ReceiveMsg()");
+                Close();
             }
         }
 
@@ -121,7 +162,11 @@ namespace ChatOnline
             }
 
         }
-
+        public void Close()
+        {
+            stream?.Close();
+            client?.Close();
+        }
 
 
         public event PropertyChangedEventHandler PropertyChanged;
