@@ -48,7 +48,7 @@ namespace ChatOnline
 
         private void MenuItem_Click_Private(object sender, RoutedEventArgs e)
         {
-            view.Private.Execute(null);//Как привязать?
+            view.PrivateMsg.Execute(null);//Как привязать?
         }
 
         

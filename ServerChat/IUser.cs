@@ -10,6 +10,9 @@ namespace ServerChat
     {
         string ID { get; set; }
         string Name { get; set; }
+        string NamePrivate { get; set; }
+        bool ConnectPrivate { get; set; }
+        bool DisconnectPrivate { get; set; }
         bool ConnectClient { get; set; }
         bool DisconnectClient { get; set; }
         bool SendFile { get; set; }

@@ -11,6 +11,9 @@ namespace ServerChat
     {
 		public string ID { get; set; }
 		public string Name { get; set; }
+		public string NamePrivate { get; set; }
+		public bool ConnectPrivate { get; set; }
+		public bool DisconnectPrivate { get; set; }
 		public bool SendFile { get; set; }
 		public bool ConnectClient { get; set; }
 		public bool DisconnectClient { get; set; }
@@ -24,6 +27,9 @@ namespace ServerChat
 				{
 					writer.Write(ID);
 					writer.Write(Name);
+					writer.Write(NamePrivate);
+					writer.Write(ConnectPrivate);
+					writer.Write(DisconnectPrivate);
 					writer.Write(SendFile);
 					writer.Write(ConnectClient);
 					writer.Write(DisconnectClient);
@@ -40,9 +46,11 @@ namespace ServerChat
 			{
 				using (BinaryReader reader = new BinaryReader(m))
 				{
-					
 					ID = reader.ReadString();
 					Name = reader.ReadString();
+					NamePrivate = reader.ReadString();
+					ConnectPrivate = reader.ReadBoolean();
+					DisconnectPrivate = reader.ReadBoolean();
 					SendFile = reader.ReadBoolean();
 					ConnectClient = reader.ReadBoolean();
 					DisconnectClient = reader.ReadBoolean();

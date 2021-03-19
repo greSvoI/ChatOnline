@@ -59,6 +59,12 @@ namespace ServerChat
                         data = GetMsg();
                         if (data == null) Close();
                         User.Desserialize(data);
+                        
+                        if(string.IsNullOrEmpty(User.NamePrivate))
+                        {
+                            server.PrivateMassage(User,User.NamePrivate);
+                        }
+                        else
                         server.BroadCastUser(User);
                     }
                     catch (Exception ex)

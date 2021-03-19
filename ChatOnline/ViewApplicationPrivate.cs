@@ -11,6 +11,7 @@ namespace ChatOnline.PrivateChat
 {
     public class ViewApplicationPrivate : INotifyPropertyChanged
     {
+        public string Name;
         ObservableCollection<string> listMessage;
         public  ObservableCollection<string> ListMmessage { get => listMessage; set { listMessage = value; OnPropertyChanged(""); } }
 

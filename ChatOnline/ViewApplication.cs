@@ -1,5 +1,6 @@
 ﻿using ChatOnline.Command;
 using System;
+using ChatOnline.PrivateChat;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -27,6 +28,7 @@ namespace ChatOnline
         public User User { get => user; set { user = value; } }
 
         User temp = new User();
+        //List<PrivateChat> PrivateChats = new List<PrivateChat>();
         public Dispatcher MyDispatcher { get; set; }
        // public Brush MyBrush { get => User.Brush; set { User.Brush = value; OnPropertyChanged(""); } }
 
@@ -63,7 +65,7 @@ namespace ChatOnline
             this.MyDispatcher = Dispatcher.CurrentDispatcher;
             //Connect();
         }
-        public ICommand Private => new DelegateCommand(() => PrivateTo());
+        public ICommand PrivateMsg => new DelegateCommand(() => PrivateTo());
         public ICommand ConnectTo => new DelegateCommand(()=>Connect());
         private void Connect()
         {
@@ -89,7 +91,9 @@ namespace ChatOnline
 
         private void PrivateTo()
         {
-            if (string.IsNullOrEmpty(selectName)) return;
+            if (string.IsNullOrEmpty(selectName)) 
+                return;
+
 
         }
         private void ReceiveMsg()
@@ -122,8 +126,6 @@ namespace ChatOnline
                 string temps = Encoding.Unicode.GetString(data, 0, data.Length);
                 string []client = temps.Split(',');
 
-                
-
                 this.User.ID = client[0];
 
                 for (int i = 1; i < client.Length; i++)
@@ -135,9 +137,6 @@ namespace ChatOnline
                             UserBox.Add(client[i]);
                         });
                 }
-
-
-
 
                 while (true)
                 {
@@ -171,6 +170,23 @@ namespace ChatOnline
                            
                         });
                     }
+
+                    if(string.IsNullOrEmpty(temp.NamePrivate))
+                    {
+                        //if (PrivateChats.Any(x => x.view.Name == temp.NamePrivate))
+                        //    foreach (var item in PrivateChats)
+                        //        if (item.Name == temp.NamePrivate)
+                        //            item.view.ListMmessage.Add(temp.Message);
+                        //else
+                        //{
+                                  
+
+                        //}
+
+
+                    }
+
+
 
                     if (temp.ID != User.ID && !string.IsNullOrEmpty(temp.Message))
                     {

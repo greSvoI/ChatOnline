@@ -98,7 +98,15 @@ namespace ServerChat
                 Disconnect();
             }
         }
-
+        protected internal void PrivateMassage(User user,string name)
+        {
+            byte[] data = user.Serialize();
+            foreach(ClientUser item in clients)
+            {
+                if (item.User.Name == name)
+                    item.networkStream.Write(data, 0, data.Length);
+            }
+        }
         protected internal void BroadCastMsg(string msg)
         {
             this.Dispatcher.Invoke(new Action(() =>
