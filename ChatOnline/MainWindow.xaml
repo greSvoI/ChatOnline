@@ -5,22 +5,25 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ChatOnline"
         mc:Ignorable="d"
-        xmlns:p="clr-namespace:ChatOnline"
+        xmlns:p="clr-namespace:ChatOnline.PrivateChat"
         Title="MainWindow" Height="450" Width="800">
     <Window.Resources>
         
     </Window.Resources>
+    
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="0.3*"></ColumnDefinition>
             <ColumnDefinition></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <StackPanel>
-            <ListBox Name="listBoxUser" ItemsSource="{Binding UserBox}">
+            <TextBox Margin="5" Text="{Binding UserName}"></TextBox>
+            <Button Margin="5" Command="{Binding ConnectTo}">Connect</Button>
+            <ListBox Name="listBoxUser" ItemsSource="{Binding UserBox}" SelectedItem="{Binding SelectUser}">
                 <ListBox.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Send file"/>
-                        <MenuItem Header="Private chat"/>
+                        <MenuItem Header="Private chat" Click="MenuItem_Click_Private"/>
                     </ContextMenu>
                 </ListBox.ContextMenu>
             </ListBox>

@@ -19,10 +19,13 @@ namespace ChatOnline
     class ViewApplication : INotifyPropertyChanged
     {
         static Random random = new Random();
-
+        string name;
+        string selectName;
+        public string UserName { get => name; set { name = value; OnPropertyChanged(""); } }
+        public string SelectUser { set { selectName = value; OnPropertyChanged(""); } }
         private User user;
-       
         public User User { get => user; set { user = value; } }
+
         User temp = new User();
         public Dispatcher MyDispatcher { get; set; }
        // public Brush MyBrush { get => User.Brush; set { User.Brush = value; OnPropertyChanged(""); } }
@@ -53,34 +56,64 @@ namespace ChatOnline
         public ViewApplication()
         {
             user = new User();
-            User.Name = random.Next(100).ToString();
             User.Brush = new SolidColorBrush(Colors.LightCoral);
             msgBox = new ObservableCollection<User>();
             userBox = new ObservableCollection<string>();
             client = new TcpClient();
             this.MyDispatcher = Dispatcher.CurrentDispatcher;
-            Connect();
+            //Connect();
         }
+        public ICommand Private => new DelegateCommand(() => PrivateTo());
+        public ICommand ConnectTo => new DelegateCommand(()=>Connect());
         private void Connect()
         {
-            client.Connect("127.0.0.1",8000);
-            stream = client.GetStream();
+            if (!string.IsNullOrEmpty(UserName))
+                User.Name = UserName;
+            else return;
+
+            if (!client.Connected)
+            {
+                client.Connect("127.0.0.1", 8000);
+                stream = client.GetStream();
+            }
 
 
+            //byte[] data = new byte[64];
+            //data = Encoding.Unicode.GetBytes(User.Name);
+            //stream.Write(data, 0, data.Length);//Отправляем имя
 
             Thread receiveThread = new Thread(new ThreadStart(ReceiveMsg));
             receiveThread.Start();
 
         }
 
+        private void PrivateTo()
+        {
+            if (string.IsNullOrEmpty(selectName)) return;
+
+        }
         private void ReceiveMsg()
         {
             try
             {
 
-                byte[] data = new byte[64];
-                data = Encoding.Unicode.GetBytes(User.Name);
-                stream.Write(data, 0, data.Length);//Отправляем имя
+                byte[] data;
+                while (true)
+                {
+                    data = new byte[64];
+                    data = Encoding.Unicode.GetBytes(User.Name);
+                    stream.Write(data, 0, data.Length);//Отправляем имя
+                    data = new byte[64];
+                    stream.Read(data, 0, data.Length);
+                    if (data[0] == 0)
+                    {
+                        stream.Flush();
+                        MessageBox.Show("Логин занят!");
+                        return;
+                    }
+                    else 
+                        break;
+                }
 
                 data = new byte[1024];
 
@@ -132,14 +165,14 @@ namespace ChatOnline
                     {
                         MyDispatcher.Invoke(() =>
                         {
-                            temp.Message = "Bye";
+                            //temp.Message = "Bye";
                             MsgBox.Add(temp);
                             UserBox.Remove(temp.Name);
                            
                         });
                     }
 
-                    if (temp.ID != User.ID && temp.Message!="")
+                    if (temp.ID != User.ID && !string.IsNullOrEmpty(temp.Message))
                     {
                       MyDispatcher.Invoke(() =>
                       {
@@ -147,7 +180,7 @@ namespace ChatOnline
                           MsgBox.Add(temp);
                       });
                     }
-                    else if(temp.ID == User.ID && temp.Message != "")
+                    else if(temp.ID == User.ID && !string.IsNullOrEmpty(temp.Message))
                     {
                         MyDispatcher.Invoke(() =>
                         {
@@ -187,5 +220,7 @@ namespace ChatOnline
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
         }
+        
     }
+    
 }

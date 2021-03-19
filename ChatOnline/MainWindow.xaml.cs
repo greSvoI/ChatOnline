@@ -24,10 +24,10 @@ namespace ChatOnline
         ViewApplication view;
         public MainWindow()
         {
-
             InitializeComponent();
             DataContext = view = new ViewApplication();
             Closing += MainWindow_Closing;
+            
         }
 
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -45,5 +45,12 @@ namespace ChatOnline
                 textBoxSend.Clear();
             }
         }
+
+        private void MenuItem_Click_Private(object sender, RoutedEventArgs e)
+        {
+            view.Private.Execute(null);//Как привязать?
+        }
+
+        
     }
 }

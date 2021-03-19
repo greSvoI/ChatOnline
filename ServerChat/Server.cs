@@ -20,9 +20,10 @@ namespace ServerChat
         TcpListener tcpListener;
         public Dispatcher Dispatcher { get; set; }
 
-        List<ClientUser> clients = new List<ClientUser>();
+        public List<ClientUser> clients = new List<ClientUser>();
 
         ObservableCollection<string> message = new ObservableCollection<string>();
+
         public Server()
         {
 
@@ -82,6 +83,10 @@ namespace ServerChat
 
                    TcpClient client = tcpListener.AcceptTcpClient();
                    ClientUser clientUser = new ClientUser(client,this);
+
+
+
+
 
                    Thread clientThread = new Thread(new ThreadStart(clientUser.Process));
                    clientThread.Start();

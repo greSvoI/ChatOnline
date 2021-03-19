@@ -28,13 +28,29 @@ namespace ServerChat
             {
 
                 networkStream = client.GetStream();
-                byte[] data = new byte[64];
+                byte[] data;
+                while (true)
+                {
 
-                networkStream.Read(data, 0, data.Length);
-                User.Name = Encoding.Unicode.GetString(data).Trim('\0'); //Получаем Имя
+                    data = new byte[64];
+                    networkStream.Read(data, 0, data.Length);
+                    User.Name = Encoding.Unicode.GetString(data).Trim('\0'); //Получаем Имя
 
+                    if (!server.clients.Any(x => x.User.Name == User.Name))
+                    {
+                        networkStream.Flush();
+                        data[0] = 1;
+                        networkStream.Write(data, 0, data.Length);
+                        break;
+                    }
+                    else
+                    {
+                        data[0] = 0;
+                        networkStream.Write(data, 0, data.Length);
+                        networkStream.Flush();
+                    }
+                }
                 server.AddConnection(this);//Отправляем список активных
-
                 while (true)
                 {
                     try
