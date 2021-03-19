@@ -11,13 +11,13 @@ namespace ServerChat
     {
 		public string ID { get; set; }
 		public string Name { get; set; }
-		public string NamePrivate { get; set; }
-		public bool ConnectPrivate { get; set; }
-		public bool DisconnectPrivate { get; set; }
-		public bool SendFile { get; set; }
-		public bool ConnectClient { get; set; }
-		public bool DisconnectClient { get; set; }
-		public bool SendMessage { get; set; }
+		public string NamePrivate { get; set; } = "";
+		public bool ConnectPrivate { get; set; } = false;
+		public bool DisconnectPrivate { get; set; } = false;
+		public bool SendFile { get; set; } = false;
+		public bool ConnectClient { get; set; } = false;
+		public bool DisconnectClient { get; set; } = false;
+		public bool SendMessage { get; set; } = false;
 		public string Message { get; set; } = "";
 		public byte[] Serialize()
 		{

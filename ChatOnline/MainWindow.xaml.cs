@@ -41,6 +41,7 @@ namespace ChatOnline
             {
                 view.User.Message = textBoxSend.Text;
                 view.User.SendMessage = true;
+                view.User.ConnectPrivate = false;
                 view.Send.Execute(null);
                 textBoxSend.Clear();
             }

@@ -1,6 +1,6 @@
 ﻿using ChatOnline.Command;
 using System;
-using ChatOnline.PrivateChat;
+using ChatOnline;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -28,7 +28,7 @@ namespace ChatOnline
         public User User { get => user; set { user = value; } }
 
         User temp = new User();
-        //List<PrivateChat> PrivateChats = new List<PrivateChat>();
+        List<PrivatChat> PrivatChats = new List<PrivatChat>();
         public Dispatcher MyDispatcher { get; set; }
        // public Brush MyBrush { get => User.Brush; set { User.Brush = value; OnPropertyChanged(""); } }
 
@@ -94,6 +94,13 @@ namespace ChatOnline
             if (string.IsNullOrEmpty(selectName)) 
                 return;
 
+
+
+            User.NamePrivate = selectName;
+            User.ConnectPrivate = true;
+           
+            byte[] data = User.Serialize();
+            stream.Write(data, 0, data.Length);
 
         }
         private void ReceiveMsg()
@@ -171,24 +178,39 @@ namespace ChatOnline
                         });
                     }
 
-                    if(string.IsNullOrEmpty(temp.NamePrivate))
+                    if(temp.ConnectPrivate)
                     {
-                        //if (PrivateChats.Any(x => x.view.Name == temp.NamePrivate))
-                        //    foreach (var item in PrivateChats)
-                        //        if (item.Name == temp.NamePrivate)
-                        //            item.view.ListMmessage.Add(temp.Message);
-                        //else
-                        //{
-                                  
+                        if (PrivatChats.Any(x => x.view.privateName == temp.Name))
+                                MyDispatcher.Invoke(() =>
+                                {
+                                foreach (var item in PrivatChats)
+                                
+                                    if (item.view.privateName == temp.Name)
+                                        item.view.ListMmessage.Add(temp.Message);
+                                });
+                               
+                            
+                        else
+                        {
+                            MyDispatcher.Invoke(() =>
+                            {
+                                PrivatChat chat = new PrivatChat();
+                                chat.view.Name = UserName;
+                                chat.view.privateName = temp.Name;
+                                chat.view.user = temp;
+                                chat.view.stream = stream;
+                                chat.Title = "Приват :" + temp.Name;
+                                chat.Show();
+                                PrivatChats.Add(chat);
+                            });
+                            
 
-                        //}
+                        }
 
 
                     }
 
-
-
-                    if (temp.ID != User.ID && !string.IsNullOrEmpty(temp.Message))
+                    else if (temp.ID != User.ID && !string.IsNullOrEmpty(temp.Message))
                     {
                       MyDispatcher.Invoke(() =>
                       {

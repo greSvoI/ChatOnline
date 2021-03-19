@@ -60,7 +60,7 @@ namespace ServerChat
                         if (data == null) Close();
                         User.Desserialize(data);
                         
-                        if(string.IsNullOrEmpty(User.NamePrivate))
+                        if(!string.IsNullOrEmpty(User.NamePrivate))
                         {
                             server.PrivateMassage(User,User.NamePrivate);
                         }
