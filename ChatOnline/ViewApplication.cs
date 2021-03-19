@@ -101,7 +101,8 @@ namespace ChatOnline
            
             byte[] data = User.Serialize();
             stream.Write(data, 0, data.Length);
-
+            User.NamePrivate = "";
+            User.ConnectPrivate = false;
         }
         private void ReceiveMsg()
         {
@@ -164,7 +165,7 @@ namespace ChatOnline
                         {
                             UserBox.Add(temp.Name);
                         });
-                        temp.ConnectClient = false;
+                       
                     }
 
                     if(temp.DisconnectClient)
@@ -199,9 +200,12 @@ namespace ChatOnline
                                 chat.view.privateName = temp.Name;
                                 chat.view.user = temp;
                                 chat.view.stream = stream;
-                                chat.Title = "Приват :" + temp.Name;
+                                chat.Title ="Владелец" + UserName+ " => " + temp.Name;
+                               
                                 chat.Show();
                                 PrivatChats.Add(chat);
+                                if (string.IsNullOrEmpty(temp.Message))
+                                chat.view.ListMmessage.Add(temp.Message);
                             });
                             
 
@@ -210,7 +214,7 @@ namespace ChatOnline
 
                     }
 
-                    else if (temp.ID != User.ID && !string.IsNullOrEmpty(temp.Message))
+                    if (temp.ID != User.ID && !string.IsNullOrEmpty(temp.Message)&& !temp.ConnectPrivate)
                     {
                       MyDispatcher.Invoke(() =>
                       {
@@ -218,7 +222,7 @@ namespace ChatOnline
                           MsgBox.Add(temp);
                       });
                     }
-                    else if(temp.ID == User.ID && !string.IsNullOrEmpty(temp.Message))
+                    if(temp.ID == User.ID && !string.IsNullOrEmpty(temp.Message) && !temp.ConnectPrivate)
                     {
                         MyDispatcher.Invoke(() =>
                         {
