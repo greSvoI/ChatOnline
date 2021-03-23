@@ -55,10 +55,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="ClientUser.cs" />
-    <Compile Include="IUser.cs" />
-    <Compile Include="Server.cs" />
-    <Compile Include="User.cs" />
+    <Compile Include="Action\ClientUser.cs" />
+    <Compile Include="Model\IUser.cs" />
+    <Compile Include="Action\Server.cs" />
+    <Compile Include="Model\User.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

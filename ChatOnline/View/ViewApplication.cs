@@ -75,7 +75,7 @@ namespace ChatOnline
 
             if (!client.Connected)
             {
-                client.Connect("127.0.0.1", 8000);
+                client.Connect("192.168.0.104", 8000);
                 stream = client.GetStream();
             }
 

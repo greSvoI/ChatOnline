@@ -55,13 +55,13 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="IUser.cs" />
+    <Compile Include="Model\IUser.cs" />
     <Compile Include="PrivatChat.xaml.cs">
       <DependentUpon>PrivatChat.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ViewApplicationPrivate.cs" />
-    <Compile Include="User.cs" />
-    <Compile Include="ViewApplication.cs" />
+    <Compile Include="View\ViewApplicationPrivate.cs" />
+    <Compile Include="Model\User.cs" />
+    <Compile Include="View\ViewApplication.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

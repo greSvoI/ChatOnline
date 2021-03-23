@@ -75,7 +75,7 @@ namespace ServerChat
         {
             try
             {
-                tcpListener = new TcpListener(IPAddress.Parse("127.0.0.1"), 8000);
+                tcpListener = new TcpListener(IPAddress.Parse("192.168.0.104"), 8000);
                 tcpListener.Start();
 
                 while (true)
