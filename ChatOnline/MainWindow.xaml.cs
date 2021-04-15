@@ -26,15 +26,15 @@ namespace ChatOnline
         {
             InitializeComponent();
             DataContext = view = new ViewApplication();
-            Closing += (s, e) => { view.Close(); };
+            Closing += (s, e) => { view.client.Close(); };
         }
         private void textBoxSend_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {
-                view.User.Message = textBoxSend.Text;
-                view.User.SendMessage = true;
-                view.User.ConnectPrivate = false;
+                view.client.User.Message = textBoxSend.Text;
+                view.client.User.SendMessage = true;
+                view.client.User.ConnectPrivate = false;
                 view.Send.Execute(null);
                 textBoxSend.Clear();
             }
