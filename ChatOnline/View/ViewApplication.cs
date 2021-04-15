@@ -15,6 +15,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 using ChatOnline.Model;
+using System.Windows.Controls;
 
 namespace ChatOnline
 {
@@ -22,34 +23,21 @@ namespace ChatOnline
     {
         string name;
         string selectName;
-        public string UserName { get => name; set { name = value; OnPropertyChanged(""); } }
-        public string SelectUser { get => selectName; set { selectName = value; OnPropertyChanged(""); } }
-        protected internal Client client;
-
-        protected internal List<PrivatChat> PrivatChats = new List<PrivatChat>();
-        protected internal Dispatcher MyDispatcher { get; set; }
 
         private ObservableCollection<User> msgBox;
         private ObservableCollection<string> userBox;
-        public ObservableCollection<User> MsgBox
-        { 
-            get => msgBox; 
-            set
-            {
-                msgBox = value; OnPropertyChanged("");
-            }
-        }
-        public ObservableCollection<string> UserBox
+        protected internal Client client;
+        protected internal List<PrivatChat> PrivatChats = new List<PrivatChat>();
+        protected internal Dispatcher MyDispatcher { get; set; }
+       
+        public string UserName { get => name; set { name = value; OnPropertyChanged(""); } }
+        public string SelectUser { get => selectName; set { selectName = value; OnPropertyChanged(""); } }
+        public ObservableCollection<User> MsgBox { get => msgBox; set { msgBox = value; OnPropertyChanged(""); } }
+        public ObservableCollection<string> UserBox { get => userBox; set { userBox = value; OnPropertyChanged(""); } }
+        public ViewApplication(TextBox box)
         {
-            get => userBox;
-            set
-            {
-                userBox = value; OnPropertyChanged("");
-            }
-        }
-        public ViewApplication()
-        {
-            client = new Client(this);
+            
+            client = new Client(this,box);
             msgBox = new ObservableCollection<User>();
             userBox = new ObservableCollection<string>();
             this.MyDispatcher = Dispatcher.CurrentDispatcher;

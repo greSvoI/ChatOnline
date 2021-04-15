@@ -49,7 +49,11 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <TextBox  Grid.Row="1" Name="textBoxSend" KeyDown="textBoxSend_KeyDown"/>
+            <TextBox  Grid.Row="1"  Name="textMsg" Text="{Binding SendText, Mode=TwoWay}">
+                <TextBox.InputBindings>
+                    <KeyBinding Key="Enter" Command="{Binding Send}"/>
+                </TextBox.InputBindings>
+            </TextBox>
         </Grid>
     </Grid>
 </Window>

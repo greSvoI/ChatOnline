@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 
 namespace ChatOnline.Model
@@ -18,9 +19,10 @@ namespace ChatOnline.Model
         readonly int port = 8000;
         ViewApplication view;
         public User User { get; set; }
-
-        public Client(ViewApplication view)
+        TextBox box;
+        public Client(ViewApplication view,TextBox box)
         {
+            this.box = box;
             this.view = view;
             this.User = new User();
             this.User.Brush = new SolidColorBrush(Colors.LightCoral);
@@ -67,12 +69,13 @@ namespace ChatOnline.Model
         }
         public void SendMsg()
         {
+            User.Message = box.Text;
+            box.Clear();
             if (!string.IsNullOrEmpty(User.Message))
             {
                 byte[] data = User.Serialize();
                 stream.Write(data, 0, data.Length);
             }
-
         }
         private void ReceiveMsg()
         {

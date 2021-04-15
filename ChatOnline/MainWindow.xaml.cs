@@ -15,35 +15,14 @@ using System.Windows.Shapes;
 
 namespace ChatOnline
 {
-    /// <summary>
-    /// Логика взаимодействия для MainWindow.xaml
-    /// </summary>
-    /// 
     public partial class MainWindow : Window
     {
         ViewApplication view;
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = view = new ViewApplication();
+            DataContext = view = new ViewApplication(textMsg);
             Closing += (s, e) => { view.client.Close(); };
         }
-        private void textBoxSend_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
-            {
-                view.client.User.Message = textBoxSend.Text;
-                view.client.User.SendMessage = true;
-                view.client.User.ConnectPrivate = false;
-                view.Send.Execute(null);
-                textBoxSend.Clear();
-            }
-        }
-
-        //private void MenuItem_Click_Private(object sender, RoutedEventArgs e)
-        //{
-        //    view.PrivateMsg.Execute(null);//Как привязать?
-        //}
-
     }
 }
