@@ -17,6 +17,7 @@ namespace ServerChat
 {
     public class Server : INotifyPropertyChanged
     {
+        readonly string ip = "127.0.0.1";
         TcpListener tcpListener;
         public Dispatcher Dispatcher { get; set; }
 
@@ -75,7 +76,7 @@ namespace ServerChat
         {
             try
             {
-                tcpListener = new TcpListener(IPAddress.Parse("192.168.0.104"), 8000);
+                tcpListener = new TcpListener(IPAddress.Parse(ip), 8000);
                 tcpListener.Start();
 
                 while (true)

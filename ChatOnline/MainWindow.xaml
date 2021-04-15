@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="{Binding UserName}" Height="450" Width="800">
     <Window.Resources>
-        
+     
     </Window.Resources>
     
     <Grid>
@@ -21,8 +21,8 @@
             <ListBox Name="listBoxUser" ItemsSource="{Binding UserBox}" SelectedItem="{Binding SelectUser}">
                 <ListBox.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="Send file"/>
-                        <MenuItem Header="Private chat" Click="MenuItem_Click_Private"/>
+                        <MenuItem Header="Send file" Command="{Binding SendOne}"/>
+                        <MenuItem Header="Private chat" Command="{Binding PrivateMsg}"/>
                     </ContextMenu>
                 </ListBox.ContextMenu>
             </ListBox>
@@ -33,19 +33,26 @@
                 <RowDefinition/>
             </Grid.RowDefinitions>
             <ListBox ItemsSource="{Binding MsgBox}">
+                <ListBox.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Send File" Command="{Binding SendToAll}"/>
+                    </ContextMenu>
+                </ListBox.ContextMenu>
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Padding="4" Text="{Binding Name}"/>
-                            <Border Background="{Binding Brush}" Padding="4" CornerRadius="5">
-                                <TextBlock  Margin="10 0 0 0" Text="{Binding Message}"/>
-                            </Border>
-                            
-                        </StackPanel>
+                        <DockPanel>
+                            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+                                <TextBlock Padding="4" Text="{Binding Name}"/>
+                                <Border Background="{Binding Brush}" Padding="4" CornerRadius="5">
+                                    <TextBlock  Margin="10 0 10 0" Text="{Binding Message}"/>
+                                </Border>
+                            </StackPanel>
+                            <Button DockPanel.Dock="Bottom" Command="{Binding Accept}">Button</Button>
+                        </DockPanel>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <TextBox Grid.Row="1" Name="textBoxSend" KeyDown="textBoxSend_KeyDown"/>
+            <TextBox  Grid.Row="1" Name="textBoxSend" KeyDown="textBoxSend_KeyDown"/>
         </Grid>
     </Grid>
 </Window>

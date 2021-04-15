@@ -26,15 +26,8 @@ namespace ChatOnline
         {
             InitializeComponent();
             DataContext = view = new ViewApplication();
-            Closing += MainWindow_Closing;
-            
+            Closing += (s, e) => { view.Close(); };
         }
-
-        private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            view.Close();
-        }
-
         private void textBoxSend_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
@@ -47,11 +40,10 @@ namespace ChatOnline
             }
         }
 
-        private void MenuItem_Click_Private(object sender, RoutedEventArgs e)
-        {
-            view.PrivateMsg.Execute(null);//Как привязать?
-        }
+        //private void MenuItem_Click_Private(object sender, RoutedEventArgs e)
+        //{
+        //    view.PrivateMsg.Execute(null);//Как привязать?
+        //}
 
-        
     }
 }

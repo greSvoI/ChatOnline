@@ -19,6 +19,7 @@ namespace ChatOnline
 {
     class ViewApplication : INotifyPropertyChanged
     {
+        readonly string ip = "127.0.0.1";
         static Random random = new Random();
         string name;
         string selectName;
@@ -51,7 +52,7 @@ namespace ChatOnline
             }
         }
 
-
+        
         public static TcpClient client;
         public static NetworkStream stream;
 
@@ -63,10 +64,22 @@ namespace ChatOnline
             userBox = new ObservableCollection<string>();
             client = new TcpClient();
             this.MyDispatcher = Dispatcher.CurrentDispatcher;
-            //Connect();
         }
+        public ICommand Send => new DelegateCommand(() => SendMsg());
+        public ICommand Accept => new DelegateCommand(() => AcceptFile());
         public ICommand PrivateMsg => new DelegateCommand(() => PrivateTo());
         public ICommand ConnectTo => new DelegateCommand(()=>Connect());
+        public ICommand SendToAll => new DelegateCommand(()=> SendFileEveryone());
+        public ICommand SendOne => new DelegateCommand(()=>SendToOne());
+
+        private void SendFileEveryone()
+        {
+
+        }
+        private void SendToOne()
+        {
+
+        }
         private void Connect()
         {
             if (!string.IsNullOrEmpty(UserName))
@@ -75,7 +88,7 @@ namespace ChatOnline
 
             if (!client.Connected)
             {
-                client.Connect("192.168.0.104", 8000);
+                client.Connect(ip, 8000);
                 stream = client.GetStream();
             }
 
@@ -93,8 +106,6 @@ namespace ChatOnline
         {
             if (string.IsNullOrEmpty(selectName)) 
                 return;
-
-
 
             User.NamePrivate = selectName;
             User.ConnectPrivate = true;
@@ -240,7 +251,11 @@ namespace ChatOnline
             }
         }
 
-        public ICommand Send => new DelegateCommand(() => SendMsg());
+        
+        private void AcceptFile()
+        {
+
+        }
         public void SendMsg()
         {
             if (!string.IsNullOrEmpty(user.Message))
