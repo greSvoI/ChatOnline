@@ -16,6 +16,7 @@ namespace ServerChat
         bool ConnectClient { get; set; }
         bool DisconnectClient { get; set; }
         bool SendFile { get; set; }
+        string FileName { get; set; }
         bool SendMessage { get; set; }
         string Message { get; set; }
         byte[] Serialize();

@@ -15,6 +15,7 @@ namespace ServerChat
 		public bool ConnectPrivate { get; set; } = false;
 		public bool DisconnectPrivate { get; set; } = false;
 		public bool SendFile { get; set; } = false;
+		public string FileName { get; set; } = "";
 		public bool ConnectClient { get; set; } = false;
 		public bool DisconnectClient { get; set; } = false;
 		public bool SendMessage { get; set; } = false;
@@ -31,6 +32,7 @@ namespace ServerChat
 					writer.Write(ConnectPrivate);
 					writer.Write(DisconnectPrivate);
 					writer.Write(SendFile);
+					writer.Write(FileName);
 					writer.Write(ConnectClient);
 					writer.Write(DisconnectClient);
 					writer.Write(SendMessage);
@@ -52,6 +54,7 @@ namespace ServerChat
 					ConnectPrivate = reader.ReadBoolean();
 					DisconnectPrivate = reader.ReadBoolean();
 					SendFile = reader.ReadBoolean();
+					FileName = reader.ReadString();
 					ConnectClient = reader.ReadBoolean();
 					DisconnectClient = reader.ReadBoolean();
 					SendMessage = reader.ReadBoolean();

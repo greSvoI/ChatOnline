@@ -25,13 +25,12 @@ namespace ChatOnline
         string selectName;
         public string UserName { get => name; set { name = value; OnPropertyChanged(""); } }
         public string SelectUser { set { selectName = value; OnPropertyChanged(""); } }
+
         private User user;
         public User User { get => user; set { user = value; } }
 
-        User temp = new User();
         List<PrivatChat> PrivatChats = new List<PrivatChat>();
         public Dispatcher MyDispatcher { get; set; }
-       // public Brush MyBrush { get => User.Brush; set { User.Brush = value; OnPropertyChanged(""); } }
 
         private ObservableCollection<User> msgBox;
         private ObservableCollection<string> userBox;
@@ -51,8 +50,6 @@ namespace ChatOnline
                 userBox = value; OnPropertyChanged("");
             }
         }
-
-        
         public static TcpClient client;
         public static NetworkStream stream;
 
@@ -91,15 +88,8 @@ namespace ChatOnline
                 client.Connect(ip, 8000);
                 stream = client.GetStream();
             }
-
-
-            //byte[] data = new byte[64];
-            //data = Encoding.Unicode.GetBytes(User.Name);
-            //stream.Write(data, 0, data.Length);//Отправляем имя
-
             Thread receiveThread = new Thread(new ThreadStart(ReceiveMsg));
             receiveThread.Start();
-
         }
 
         private void PrivateTo()
@@ -119,7 +109,7 @@ namespace ChatOnline
         {
             try
             {
-
+                User temp = new User();
                 byte[] data;
                 while (true)
                 {
