@@ -1,5 +1,8 @@
-﻿using System;
+﻿
+using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
@@ -15,8 +18,12 @@ namespace ChatOnline.Model
     {
         static TcpClient tcpclient;
         static NetworkStream stream;
+        Socket socket;
         readonly string ip = "127.0.0.1";
+        readonly int port_send = 500;
         readonly int port = 8000;
+        string fileName;
+        string filePath;
         ViewApplication view;
         public User User { get; set; }
         TextBox box;
@@ -27,6 +34,7 @@ namespace ChatOnline.Model
             this.User = new User();
             this.User.Brush = new SolidColorBrush(Colors.LightCoral);
             tcpclient = new TcpClient();
+            User.TextDecorations = null;
         }
         protected internal void Connect()
         {
@@ -38,6 +46,42 @@ namespace ChatOnline.Model
             {
                 tcpclient.Connect(ip, port);
                 stream = tcpclient.GetStream();
+            }
+            User temp = new User();
+            byte[] data;
+            while (true)
+            {
+                data = new byte[64];
+                data = Encoding.Unicode.GetBytes(User.Name);
+                stream.Write(data, 0, data.Length);//Отправляем имя
+                data = new byte[64];
+                stream.Read(data, 0, data.Length);
+                if (data[0] == 0)
+                {
+                    stream.Flush();
+                    MessageBox.Show("Логин занят!");
+                    return;
+                }
+                else
+                    break;
+            }
+
+            data = new byte[1024];
+            stream.Read(data, 0, data.Length);//Активных клиентов
+
+            string temps = Encoding.Unicode.GetString(data, 0, data.Length);
+            string[] client = temps.Split(',');
+
+            this.User.ID = client[0];
+
+            for (int i = 1; i < client.Length; i++)
+            {
+                client[i].Trim('\0');
+                if (!client[i].StartsWith("*"))
+                    view.MyDispatcher.Invoke(() =>
+                    {
+                        view.UserBox.Add(client[i]);
+                    });
             }
             Thread receiveThread = new Thread(new ThreadStart(ReceiveMsg));
             receiveThread.Start();
@@ -55,17 +99,47 @@ namespace ChatOnline.Model
             User.NamePrivate = "";
             User.ConnectPrivate = false;
         }
-        protected internal void SendFileEveryone()
-        {
 
+        private void SendData()
+        {
+            FileStream fs = new FileStream(filePath, FileMode.Open,FileAccess.Read);
+
+            User.FileName = fileName;
+            User.Message = fs.Length.ToString();
+            User.SendFile = true;
+
+            byte[] data = User.Serialize();
+            stream.Write(data, 0, data.Length);
+
+            data = new byte[fs.Length];
+            fs.Read(data, 0, (int)fs.Length);
+            fs.Close();
+            stream.Write(data, 0, data.Length);
+            User.SendFile = false;
         }
-        protected internal void SendToOne()
+        protected internal void SendFile(bool flag)
         {
+            try
+            {
 
+                OpenFileDialog dialog = new OpenFileDialog();
+                if (dialog.ShowDialog() == true)
+                {
+                    fileName = dialog.SafeFileName;
+                    filePath = dialog.FileName;
+                    if (flag) User.NamePrivate = view.SelectUser;
+                    SendData();
+                }
+            }
+            catch (Exception ex)
+            {
+
+                MessageBox.Show(ex.Message + "SendFile");
+            }
         }
-        protected internal void AcceptFile()
+        protected internal void LoadFile()
         {
-
+            MessageBox.Show("OK");
         }
         public void SendMsg()
         {
@@ -82,43 +156,7 @@ namespace ChatOnline.Model
             try
             {
                 User temp = new User();
-                byte[] data;
-                while (true)
-                {
-                    data = new byte[64];
-                    data = Encoding.Unicode.GetBytes(User.Name);
-                    stream.Write(data, 0, data.Length);//Отправляем имя
-                    data = new byte[64];
-                    stream.Read(data, 0, data.Length);
-                    if (data[0] == 0)
-                    {
-                        stream.Flush();
-                        MessageBox.Show("Логин занят!");
-                        return;
-                    }
-                    else
-                        break;
-                }
-
-                data = new byte[1024];
-
-                stream.Read(data, 0, data.Length);//Активных клиентов
-
-                string temps = Encoding.Unicode.GetString(data, 0, data.Length);
-                string[] client = temps.Split(',');
-
-                this.User.ID = client[0];
-
-                for (int i = 1; i < client.Length; i++)
-                {
-                    client[i].Trim('\0');
-                    if (!client[i].StartsWith("*"))
-                        view.MyDispatcher.Invoke(() =>
-                        {
-                            view.UserBox.Add(client[i]);
-                        });
-                }
-
+                byte[] data = new byte[256];
                 while (true)
                 {
                     data = new byte[1024];
@@ -129,8 +167,6 @@ namespace ChatOnline.Model
                         temp.Desserialize(data);
 
                     } while (stream.DataAvailable);
-
-
 
                     if (!view.UserBox.Any(x => x == temp.Name))//Другой вариант temp.Connect==true ? но пока так
                     {
@@ -186,8 +222,17 @@ namespace ChatOnline.Model
 
 
                     }
-
-                    if (temp.ID != User.ID && !string.IsNullOrEmpty(temp.Message) && !temp.ConnectPrivate)
+                    if(temp.SendFile)
+                    {
+                        
+                        view.MyDispatcher.Invoke(() =>
+                        {
+                            User.TextDecorations = TextDecorations.Underline;
+                            //temp.Brush = new SolidColorBrush(Colors.LightBlue);
+                            view.MsgBox.Add(temp);
+                        });
+                    }
+                    else if (temp.ID != User.ID && !string.IsNullOrEmpty(temp.Message) && !temp.ConnectPrivate)
                     {
                         view.MyDispatcher.Invoke(() =>
                         {
@@ -195,7 +240,7 @@ namespace ChatOnline.Model
                             view.MsgBox.Add(temp);
                         });
                     }
-                    if (temp.ID == User.ID && !string.IsNullOrEmpty(temp.Message) && !temp.ConnectPrivate)
+                    else if (temp.ID == User.ID && !string.IsNullOrEmpty(temp.Message) && !temp.ConnectPrivate)
                     {
                         view.MyDispatcher.Invoke(() =>
                         {

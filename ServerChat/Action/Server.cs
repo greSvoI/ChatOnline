@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -18,7 +19,10 @@ namespace ServerChat
     public class Server : INotifyPropertyChanged
     {
         readonly string ip = "127.0.0.1";
+        IPEndPoint GetfileIP;
         TcpListener tcpListener;
+        TcpListener getfileListener;
+        Socket socket;
         public Dispatcher Dispatcher { get; set; }
 
         public List<ClientUser> clients = new List<ClientUser>();
@@ -27,7 +31,6 @@ namespace ServerChat
 
         public Server()
         {
-
             Dispatcher = Dispatcher.CurrentDispatcher;
         }
          public ObservableCollection<string> ListUser 
@@ -39,7 +42,40 @@ namespace ServerChat
                 OnPropertyChanged("");
             }
         }
-    
+        protected internal void GetFile(User user)
+        {
+            try
+            {
+                //Socket socket = getfileListener.AcceptSocket();
+                //Dispatcher.Invoke(new Action(() => { ListUser.Add("Send file : " + user.Name + " File name " + user.FileName + " " + DateTime.Now); }));
+               
+                //int bufferSize = 1024;
+                //int filesize = int.Parse(user.Message);
+                //byte[] buffer = null;
+                //FileStream fs = new FileStream(user.FileName, FileMode.OpenOrCreate);
+                //socket.Send(Encoding.Unicode.GetBytes("start"));
+                //while (filesize > 0)
+                //{
+                //    buffer = new byte[bufferSize];
+                //    Dispatcher.Invoke(new Action(() => { ListUser.Add("Load"+filesize.ToString()); }));
+                //    int size = socket.Receive(buffer, SocketFlags.Partial);
+
+                //    fs.Write(buffer, 0, size);
+
+                //    filesize -= size;
+                //}
+
+                //fs.Close();
+                //socket.Close();
+
+            }
+            catch (Exception ex) 
+            {
+
+                MessageBox.Show(ex.Message);
+            }
+
+        }
         protected internal void AddConnection(ClientUser user)
         {
             clients.Add(user);
@@ -76,6 +112,8 @@ namespace ServerChat
         {
             try
             {
+                getfileListener = new TcpListener(IPAddress.Parse(ip), 500);
+                getfileListener.Start();
                 tcpListener = new TcpListener(IPAddress.Parse(ip), 8000);
                 tcpListener.Start();
 
@@ -84,11 +122,6 @@ namespace ServerChat
 
                    TcpClient client = tcpListener.AcceptTcpClient();
                    ClientUser clientUser = new ClientUser(client,this);
-
-
-
-
-
                    Thread clientThread = new Thread(new ThreadStart(clientUser.Process));
                    clientThread.Start();
                 }

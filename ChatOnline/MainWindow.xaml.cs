@@ -21,6 +21,9 @@ namespace ChatOnline
         public MainWindow()
         {
             InitializeComponent();
+            ImageBrush brush = new ImageBrush(new BitmapImage(new Uri("2.jpg",UriKind.Relative)));
+            brush.Stretch = Stretch.Fill;
+            this.Background = brush;
             DataContext = view = new ViewApplication(textMsg);
             Closing += (s, e) => { view.client.Close(); };
         }

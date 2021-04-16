@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Media;
 
 namespace ChatOnline
@@ -23,10 +24,11 @@ namespace ChatOnline
 		public string Message { get; set; } = "";
 		private Brush brush;
 		public Brush Brush { get => brush; set { brush = value; } }
+		public TextDecorationCollection TextDecorations { get; set; }
 
-       
 
-        public byte[] Serialize()
+
+		public byte[] Serialize()
 		{
 			using (MemoryStream m = new MemoryStream())
 			{

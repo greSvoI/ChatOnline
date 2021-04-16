@@ -23,17 +23,18 @@ namespace ChatOnline
     {
         string name;
         string selectName;
+       
 
         private ObservableCollection<User> msgBox;
         private ObservableCollection<string> userBox;
         protected internal Client client;
         protected internal List<PrivatChat> PrivatChats = new List<PrivatChat>();
         protected internal Dispatcher MyDispatcher { get; set; }
-       
         public string UserName { get => name; set { name = value; OnPropertyChanged(""); } }
         public string SelectUser { get => selectName; set { selectName = value; OnPropertyChanged(""); } }
         public ObservableCollection<User> MsgBox { get => msgBox; set { msgBox = value; OnPropertyChanged(""); } }
         public ObservableCollection<string> UserBox { get => userBox; set { userBox = value; OnPropertyChanged(""); } }
+
         public ViewApplication(TextBox box)
         {
             
@@ -43,11 +44,12 @@ namespace ChatOnline
             this.MyDispatcher = Dispatcher.CurrentDispatcher;
         }
         public ICommand Send => new DelegateCommand(() => client.SendMsg());
-        public ICommand Accept => new DelegateCommand(() => client.AcceptFile());
+       // public ICommand Accept => new DelegateCommand(() => client.AcceptFile());
         public ICommand PrivateMsg => new DelegateCommand(() => client.PrivateTo());
         public ICommand ConnectTo => new DelegateCommand(()=>client.Connect());
-        public ICommand SendToAll => new DelegateCommand(()=> client.SendFileEveryone());
-        public ICommand SendOne => new DelegateCommand(()=>client.SendToOne());
+        public ICommand SendToAll => new DelegateCommand(()=> client.SendFile(false));
+        public ICommand SendOne => new DelegateCommand(()=>client.SendFile(true));
+        public ICommand ClickLoad => new DelegateCommand(()=>client.LoadFile());
 
         public event PropertyChangedEventHandler PropertyChanged;
         public void OnPropertyChanged([CallerMemberName]string prop = "")

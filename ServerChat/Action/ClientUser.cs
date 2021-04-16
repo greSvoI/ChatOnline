@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -59,8 +61,14 @@ namespace ServerChat
                         data = GetMsg();
                         if (data == null) Close();
                         User.Desserialize(data);
-                        
-                        if(!string.IsNullOrEmpty(User.NamePrivate))
+                        if(User.SendFile)
+                        {
+                            GetFile();
+                            User.Message = User.FileName;
+                            server.BroadCastUser(User);
+                            User.SendFile = false;
+                        }
+                        else if(!string.IsNullOrEmpty(User.NamePrivate))
                         {
                             server.PrivateMassage(User,User.NamePrivate);
                         }
@@ -78,6 +86,26 @@ namespace ServerChat
             {
                 //MessageBox.Show(e.Message + "ClientUser Process");
             }
+        }
+        private void GetFile()
+        {
+            server.Dispatcher.Invoke(()=> {
+                server.ListUser.Add("Получено : "+ User.FileName);
+            });
+            int len = int.Parse(User.Message);
+            FileStream fs = new FileStream(User.FileName, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite,len);
+            byte[] data;
+            int size;
+            do
+            {
+                data = new byte[9999];
+                size = networkStream.Read(data,0,data.Length);
+                fs.Write(data, 0, size);
+                if (fs.Length == len) break;
+            } while (size>0);
+            server.Dispatcher.Invoke(() => {
+                server.ListUser.Add("Загружено : " + User.FileName);
+            });
         }
         private byte[] GetMsg()
         {
