@@ -23,6 +23,7 @@ namespace ServerChat
     {
         static Server server;
         static Thread listenThread;
+        static Thread listenLoadThread;
        
         public ServerWindow()
         {
@@ -30,6 +31,11 @@ namespace ServerChat
             DataContext = server = new Server();
             listenThread = new Thread(new ThreadStart(server.Listen));
             listenThread.Start();
+
+            //listenLoadThread = new Thread(new ThreadStart(server.ListenLoad));
+            //listenLoadThread.Start();
+
+
             Closing += (s, e) => { server.Disconnect(); };
         }
     }

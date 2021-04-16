@@ -24,27 +24,28 @@ namespace ChatOnline
         string name;
         string selectName;
        
-
-        private ObservableCollection<User> msgBox;
+        
+        private ObservableCollection<Object> msgBox;
         private ObservableCollection<string> userBox;
         protected internal Client client;
         protected internal List<PrivatChat> PrivatChats = new List<PrivatChat>();
         protected internal Dispatcher MyDispatcher { get; set; }
         public string UserName { get => name; set { name = value; OnPropertyChanged(""); } }
         public string SelectUser { get => selectName; set { selectName = value; OnPropertyChanged(""); } }
-        public ObservableCollection<User> MsgBox { get => msgBox; set { msgBox = value; OnPropertyChanged(""); } }
+        private User user = new User();
+        public User GetUser { get => user; set { user = value;OnPropertyChanged(""); } }
+        public ObservableCollection<Object> MsgBox { get => msgBox; set { msgBox = value; OnPropertyChanged(""); } }
         public ObservableCollection<string> UserBox { get => userBox; set { userBox = value; OnPropertyChanged(""); } }
 
         public ViewApplication(TextBox box)
         {
             
             client = new Client(this,box);
-            msgBox = new ObservableCollection<User>();
+            msgBox = new ObservableCollection<Object>();
             userBox = new ObservableCollection<string>();
             this.MyDispatcher = Dispatcher.CurrentDispatcher;
         }
         public ICommand Send => new DelegateCommand(() => client.SendMsg());
-       // public ICommand Accept => new DelegateCommand(() => client.AcceptFile());
         public ICommand PrivateMsg => new DelegateCommand(() => client.PrivateTo());
         public ICommand ConnectTo => new DelegateCommand(()=>client.Connect());
         public ICommand SendToAll => new DelegateCommand(()=> client.SendFile(false));

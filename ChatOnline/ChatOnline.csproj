@@ -56,6 +56,8 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Model\Client.cs" />
+    <Compile Include="Model\InfoFile.cs" />
+    <Compile Include="Model\IInfoFile.cs" />
     <Compile Include="Model\ISendFile.cs" />
     <Compile Include="Model\IUser.cs" />
     <Compile Include="PrivatChat.xaml.cs">

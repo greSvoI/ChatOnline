@@ -17,11 +17,13 @@ namespace ChatOnline.Model
      public class Client
     {
         static TcpClient tcpclient;
+        static TcpClient tcpSharing;
+        static NetworkStream streamSharing;
         static NetworkStream stream;
-        Socket socket;
+        User temp_user = new User();
         readonly string ip = "127.0.0.1";
-        readonly int port_send = 500;
-        readonly int port = 8000;
+        readonly int portsharing =8005;
+        readonly int portmsg = 8000;
         string fileName;
         string filePath;
         ViewApplication view;
@@ -42,10 +44,12 @@ namespace ChatOnline.Model
                 User.Name = view.UserName;
             else return;
 
-            if (!tcpclient.Connected)
+            if (!tcpclient.Connected&& !tcpSharing.Connected)
             {
-                tcpclient.Connect(ip, port);
+                tcpclient.Connect(ip, portmsg);
                 stream = tcpclient.GetStream();
+                tcpSharing.Connect(ip, portsharing);
+                streamSharing = tcpSharing.GetStream();
             }
             User temp = new User();
             byte[] data;
@@ -85,6 +89,36 @@ namespace ChatOnline.Model
             }
             Thread receiveThread = new Thread(new ThreadStart(ReceiveMsg));
             receiveThread.Start();
+            Thread sharingThread = new Thread(new ThreadStart(ReceiveSharing));
+            sharingThread.Start();
+        }
+        protected internal void ReceiveSharing()
+        {
+            while (true)
+            {
+                byte[] data = new byte[256];
+                InfoFile info = new InfoFile();
+
+                do
+                {
+                    streamSharing.Read(data, 0, data.Length);
+                    info.Desserialize(data);
+
+                } while (streamSharing.DataAvailable);
+
+
+                int len = (int)info.FileLenght;
+                FileStream fs = new FileStream(info.FileName, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite, len);
+                do
+                {
+                    data = new byte[10000];
+                    int size = streamSharing.Read(data, 0, data.Length);
+                    fs.Write(data, 0, size);
+                    if (fs.Length == len) break;
+                } while (true);
+                fs.Close();
+            }
+
         }
         protected internal void PrivateTo()
         {
@@ -100,35 +134,39 @@ namespace ChatOnline.Model
             User.ConnectPrivate = false;
         }
 
-        private void SendData()
+        private void SendFile(InfoFile info)
         {
-            FileStream fs = new FileStream(filePath, FileMode.Open,FileAccess.Read);
+            try
+            {
+                FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                info.FileLenght = fs.Length;
 
-            User.FileName = fileName;
-            User.Message = fs.Length.ToString();
-            User.SendFile = true;
+                byte[] data = info.Serialize();
+                stream.Write(data, 0, data.Length);
+                data = new byte[fs.Length];
+                fs.Read(data, 0, (int)fs.Length);
+                fs.Close();
+                stream.Write(data, 0, data.Length);
+            }
+            catch (Exception ex)
+            {
 
-            byte[] data = User.Serialize();
-            stream.Write(data, 0, data.Length);
-
-            data = new byte[fs.Length];
-            fs.Read(data, 0, (int)fs.Length);
-            fs.Close();
-            stream.Write(data, 0, data.Length);
-            User.SendFile = false;
+                MessageBox.Show(ex.Message + "SendFile");
+            }
         }
         protected internal void SendFile(bool flag)
         {
             try
             {
 
+                InfoFile info = new InfoFile();
                 OpenFileDialog dialog = new OpenFileDialog();
                 if (dialog.ShowDialog() == true)
                 {
-                    fileName = dialog.SafeFileName;
+                    info.FileName = dialog.SafeFileName;
                     filePath = dialog.FileName;
-                    if (flag) User.NamePrivate = view.SelectUser;
-                    SendData();
+                    if (flag) info.PrivateName = view.SelectUser;
+                    SendFile(info);
                 }
             }
             catch (Exception ex)
@@ -137,9 +175,42 @@ namespace ChatOnline.Model
                 MessageBox.Show(ex.Message + "SendFile");
             }
         }
+        Thread thread;
         protected internal void LoadFile()
         {
-            MessageBox.Show("OK");
+            InfoFile info = new InfoFile();
+            info.FileName = view.GetUser.FileName;
+            if (string.IsNullOrEmpty(info.FileName))
+                return;
+            byte[] data = info.Serialize();
+            streamSharing.Write(data,0,data.Length);
+        }
+        protected internal void Load()
+        {
+           
+           
+            //NetworkStream network = tcp.GetStream();
+
+
+            //byte[] data = User.Serialize();//Запрос файла
+            //network.Write(data, 0, data.Length);
+           
+            //data = new byte[256];
+            //network.Read(data,0,data.Length);//длина файла
+            //temp_user.Desserialize(data);
+
+            //int len = int.Parse(temp_user.Message);
+
+            //FileStream fs = new FileStream(User.FileName, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite, len);
+            //int size;
+            //do
+            //{
+            //    data = new byte[9999];
+            //    size = network.Read(data, 0, data.Length);
+            //    fs.Write(data, 0, size);
+            //    if (fs.Length == len) break;
+            //} while (size > 0);
+            //thread.Abort();
         }
         public void SendMsg()
         {
@@ -155,7 +226,6 @@ namespace ChatOnline.Model
         {
             try
             {
-                User temp = new User();
                 byte[] data = new byte[256];
                 while (true)
                 {
@@ -164,39 +234,39 @@ namespace ChatOnline.Model
                     do
                     {
                         bytes = stream.Read(data, 0, data.Length);
-                        temp.Desserialize(data);
+                        temp_user.Desserialize(data);
 
                     } while (stream.DataAvailable);
 
-                    if (!view.UserBox.Any(x => x == temp.Name))//Другой вариант temp.Connect==true ? но пока так
+                    if (!view.UserBox.Any(x => x == temp_user.Name))//Другой вариант temp.Connect==true ? но пока так
                     {
                         view.MyDispatcher.Invoke(() =>
                         {
-                            view.UserBox.Add(temp.Name);
+                            view.UserBox.Add(temp_user.Name);
                         });
 
                     }
 
-                    if (temp.DisconnectClient)
+                    if (temp_user.DisconnectClient)
                     {
                         view.MyDispatcher.Invoke(() =>
                         {
                             //temp.Message = "Bye";
-                            view.MsgBox.Add(temp);
-                            view.UserBox.Remove(temp.Name);
+                            view.MsgBox.Add(temp_user);
+                            view.UserBox.Remove(temp_user.Name);
 
                         });
                     }
 
-                    if (temp.ConnectPrivate)
+                    if (temp_user.ConnectPrivate)
                     {
-                        if (view.PrivatChats.Any(x => x.view.privateName == temp.Name))
+                        if (view.PrivatChats.Any(x => x.view.privateName == temp_user.Name))
                             view.MyDispatcher.Invoke(() =>
                             {
                                 foreach (var item in view.PrivatChats)
 
-                                    if (item.view.privateName == temp.Name)
-                                        item.view.ListMmessage.Add(temp.Message);
+                                    if (item.view.privateName == temp_user.Name)
+                                        item.view.ListMmessage.Add(temp_user.Message);
                             });
 
 
@@ -206,15 +276,15 @@ namespace ChatOnline.Model
                             {
                                 PrivatChat chat = new PrivatChat();
                                 chat.view.Name = view.UserName;
-                                chat.view.privateName = temp.Name;
-                                chat.view.user = temp;
+                                chat.view.privateName = temp_user.Name;
+                                chat.view.user = temp_user;
                                 chat.view.stream = stream;
-                                chat.Title = "Владелец" + view.UserName + " => " + temp.Name;
+                                chat.Title = "Владелец" + view.UserName + " => " + temp_user.Name;
 
                                 chat.Show();
                                 view.PrivatChats.Add(chat);
-                                if (string.IsNullOrEmpty(temp.Message))
-                                    chat.view.ListMmessage.Add(temp.Message);
+                                if (string.IsNullOrEmpty(temp_user.Message))
+                                    chat.view.ListMmessage.Add(temp_user.Message);
                             });
 
 
@@ -222,29 +292,30 @@ namespace ChatOnline.Model
 
 
                     }
-                    if(temp.SendFile)
+                    if(temp_user.SendFile)
                     {
                         
                         view.MyDispatcher.Invoke(() =>
                         {
                             User.TextDecorations = TextDecorations.Underline;
                             //temp.Brush = new SolidColorBrush(Colors.LightBlue);
-                            view.MsgBox.Add(temp);
+                            view.MsgBox.Add(temp_user);
+                            User.TextDecorations = null;
                         });
                     }
-                    else if (temp.ID != User.ID && !string.IsNullOrEmpty(temp.Message) && !temp.ConnectPrivate)
+                    else if (temp_user.ID != User.ID && !string.IsNullOrEmpty(temp_user.Message) && !temp_user.ConnectPrivate)
                     {
                         view.MyDispatcher.Invoke(() =>
                         {
-                            temp.Brush = new SolidColorBrush(Colors.LightBlue);
-                            view.MsgBox.Add(temp);
+                            temp_user.Brush = new SolidColorBrush(Colors.LightBlue);
+                            view.MsgBox.Add(temp_user);
                         });
                     }
-                    else if (temp.ID == User.ID && !string.IsNullOrEmpty(temp.Message) && !temp.ConnectPrivate)
+                    else if (temp_user.ID == User.ID && !string.IsNullOrEmpty(temp_user.Message) && !temp_user.ConnectPrivate)
                     {
                         view.MyDispatcher.Invoke(() =>
                         {
-                            User.Message = temp.Message;
+                            User.Message = temp_user.Message;
                             view.MsgBox.Add(User);
                         });
                     }

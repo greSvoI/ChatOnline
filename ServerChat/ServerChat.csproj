@@ -56,6 +56,8 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Action\ClientUser.cs" />
+    <Compile Include="Model\InfoFile.cs" />
+    <Compile Include="Model\IInfoFile.cs" />
     <Compile Include="Model\IUser.cs" />
     <Compile Include="Action\Server.cs" />
     <Compile Include="Model\User.cs" />

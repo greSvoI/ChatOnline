@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ChatOnline.Model;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,22 +14,49 @@ namespace ServerChat
     public class ClientUser
     {
         TcpClient client;
+        TcpClient sharing;
         public NetworkStream networkStream;
+        public NetworkStream networkSharing;
         Server server;
         User user = new User();
         public  User User { get => user; set { user = value; } }
        
-        public ClientUser(TcpClient client, Server server)
+        public ClientUser(TcpClient message,TcpClient sharing,Server server)
         {
-            this.client = client;
+            this.client = message;
+            this.sharing = sharing;
             this.server = server;
-            User.ID = client.Client.RemoteEndPoint.ToString();   
+            User.ID = client.Client.RemoteEndPoint.ToString();
         }
-        internal void Process()
+        internal void ProcessFileSharing()
         {
             try
             {
+                InfoFile info = new InfoFile();
+                networkSharing = sharing.GetStream();
+                byte[] data = new byte[256];
+                while (true)
+                {
+                    networkSharing.Read(data, 0, data.Length);
+                    info.Desserialize(data);
+                    if (info.FileLenght == 0)
+                        SendFile(info);
+                    else 
+                        GetFile(info);
+                }
+            }
+            catch (Exception ex)
+            {
 
+                MessageBox.Show(ex.Message+ "ProcessFileSharing");
+
+            }
+
+        }
+        internal void ProcessMessage()
+        {
+            try
+            {
                 networkStream = client.GetStream();
                 byte[] data;
                 while (true)
@@ -60,20 +88,14 @@ namespace ServerChat
                         data = new byte[1024];
                         data = GetMsg();
                         if (data == null) Close();
+
                         User.Desserialize(data);
-                        if(User.SendFile)
-                        {
-                            GetFile();
-                            User.Message = User.FileName;
-                            server.BroadCastUser(User);
-                            User.SendFile = false;
-                        }
-                        else if(!string.IsNullOrEmpty(User.NamePrivate))
-                        {
+                       if(!string.IsNullOrEmpty(User.NamePrivate))
+                       {
                             server.PrivateMassage(User,User.NamePrivate);
-                        }
-                        else
-                        server.BroadCastUser(User);
+                       }
+                       else
+                       server.BroadCastUser(User);
                     }
                     catch (Exception ex)
                     {
@@ -82,30 +104,61 @@ namespace ServerChat
                 }
 
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                //MessageBox.Show(e.Message + "ClientUser Process");
+                MessageBox.Show(ex.Message + "ProcessMessage");
             }
         }
-        private void GetFile()
+        private void GetFile(InfoFile info)
         {
-            server.Dispatcher.Invoke(()=> {
-                server.ListUser.Add("Получено : "+ User.FileName);
-            });
-            int len = int.Parse(User.Message);
-            FileStream fs = new FileStream(User.FileName, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite,len);
-            byte[] data;
-            int size;
-            do
+            try
             {
-                data = new byte[9999];
-                size = networkStream.Read(data,0,data.Length);
-                fs.Write(data, 0, size);
-                if (fs.Length == len) break;
-            } while (size>0);
-            server.Dispatcher.Invoke(() => {
-                server.ListUser.Add("Загружено : " + User.FileName);
-            });
+                server.Dispatcher.Invoke(() => {
+                    server.ListUser.Add("Получено : " + info.FileName);
+                });
+                int len = (int)info.FileLenght;
+                FileStream fs = new FileStream(User.FileName, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite, len);
+                byte[] data;
+                int size;
+                do
+                {
+                    data = new byte[10000];
+                    size = networkSharing.Read(data, 0, data.Length);
+                    fs.Write(data, 0, size);
+                    if (fs.Length == len) break;
+                } while (size > 0);
+                server.Dispatcher.Invoke(() => {
+                    server.ListUser.Add("Загружено : " + User.FileName);
+                });
+                fs.Close();
+            }
+
+            catch (Exception ex)
+            {
+
+                MessageBox.Show(ex.Message+"GetFile");
+            }
+        }
+        private void SendFile(InfoFile info)
+        {
+            try
+            {
+                FileStream fs = new FileStream(info.FileName, FileMode.Open, FileAccess.Read);
+                info.FileLenght = fs.Length;
+                byte[] data = info.Serialize();
+                networkSharing.Write(data, 0, data.Length);
+
+
+                data = new byte[fs.Length];
+                fs.Read(data, 0, (int)fs.Length);
+                fs.Close();
+                networkSharing.Write(data, 0, data.Length);
+            }
+            catch (Exception ex)
+            {
+
+                MessageBox.Show(ex.Message + "SendFile");
+            }
         }
         private byte[] GetMsg()
         {

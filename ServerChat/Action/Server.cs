@@ -21,8 +21,7 @@ namespace ServerChat
         readonly string ip = "127.0.0.1";
         IPEndPoint GetfileIP;
         TcpListener tcpListener;
-        TcpListener getfileListener;
-        Socket socket;
+        TcpListener tcpListenerSharing;
         public Dispatcher Dispatcher { get; set; }
 
         public List<ClientUser> clients = new List<ClientUser>();
@@ -33,7 +32,7 @@ namespace ServerChat
         {
             Dispatcher = Dispatcher.CurrentDispatcher;
         }
-         public ObservableCollection<string> ListUser 
+        public ObservableCollection<string> ListUser 
          { 
             get => message; 
             set
@@ -41,40 +40,6 @@ namespace ServerChat
                 message = value;
                 OnPropertyChanged("");
             }
-        }
-        protected internal void GetFile(User user)
-        {
-            try
-            {
-                //Socket socket = getfileListener.AcceptSocket();
-                //Dispatcher.Invoke(new Action(() => { ListUser.Add("Send file : " + user.Name + " File name " + user.FileName + " " + DateTime.Now); }));
-               
-                //int bufferSize = 1024;
-                //int filesize = int.Parse(user.Message);
-                //byte[] buffer = null;
-                //FileStream fs = new FileStream(user.FileName, FileMode.OpenOrCreate);
-                //socket.Send(Encoding.Unicode.GetBytes("start"));
-                //while (filesize > 0)
-                //{
-                //    buffer = new byte[bufferSize];
-                //    Dispatcher.Invoke(new Action(() => { ListUser.Add("Load"+filesize.ToString()); }));
-                //    int size = socket.Receive(buffer, SocketFlags.Partial);
-
-                //    fs.Write(buffer, 0, size);
-
-                //    filesize -= size;
-                //}
-
-                //fs.Close();
-                //socket.Close();
-
-            }
-            catch (Exception ex) 
-            {
-
-                MessageBox.Show(ex.Message);
-            }
-
         }
         protected internal void AddConnection(ClientUser user)
         {
@@ -112,24 +77,58 @@ namespace ServerChat
         {
             try
             {
-                getfileListener = new TcpListener(IPAddress.Parse(ip), 500);
-                getfileListener.Start();
+               
                 tcpListener = new TcpListener(IPAddress.Parse(ip), 8000);
                 tcpListener.Start();
-
+                tcpListenerSharing = new TcpListener(IPAddress.Parse(ip), 8005);
+                tcpListenerSharing.Start();
                 while (true)
                 {
 
-                   TcpClient client = tcpListener.AcceptTcpClient();
-                   ClientUser clientUser = new ClientUser(client,this);
-                   Thread clientThread = new Thread(new ThreadStart(clientUser.Process));
-                   clientThread.Start();
+                    TcpClient message = tcpListener.AcceptTcpClient();
+                    TcpClient sharing = tcpListenerSharing.AcceptTcpClient();
+                    ClientUser clientUser = new ClientUser(message, sharing, this);
+                    Thread clientMessage = new Thread(new ThreadStart(clientUser.ProcessMessage));
+                    clientMessage.Start();
+                    Thread clientSharing = new Thread(new ThreadStart(clientUser.ProcessFileSharing));
+                    clientSharing.Start();
+                   
                 }
 
             }
             catch (Exception e)
             {
                 Disconnect();
+                
+            }
+        }
+        protected internal void SendFile(object client)
+        {
+            try
+            {
+                TcpClient tcp = (TcpClient)client;
+                NetworkStream stream = null;
+                User user = new User();
+                stream = tcp.GetStream();
+
+                byte[] data = null;
+                data = new byte[256];
+                stream.Read(data, 0, data.Length);
+                user.Desserialize(data);
+
+                FileStream fs = new FileStream(user.FileName, FileMode.Open, FileAccess.Read);
+                while (true)
+                {
+                    
+
+
+
+                }  
+            }
+            catch (Exception ex)
+            {
+
+                throw;
             }
         }
         protected internal void PrivateMassage(User user,string name)
