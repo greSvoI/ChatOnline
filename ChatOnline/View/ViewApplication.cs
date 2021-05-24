@@ -50,6 +50,7 @@ namespace ChatOnline
         public ICommand ConnectTo => new DelegateCommand(()=>client.Connect());
         public ICommand SendToAll => new DelegateCommand(()=> client.SendFile(false));
         public ICommand SendOne => new DelegateCommand(()=>client.SendFile(true));
+        
         public ICommand ClickLoad => new DelegateCommand(()=>client.LoadFile());
 
         public event PropertyChangedEventHandler PropertyChanged;

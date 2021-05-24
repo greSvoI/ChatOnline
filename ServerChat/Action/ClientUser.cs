@@ -32,17 +32,23 @@ namespace ServerChat
         {
             try
             {
-                InfoFile info = new InfoFile();
                 networkSharing = sharing.GetStream();
                 byte[] data = new byte[256];
                 while (true)
                 {
+                    InfoFile info = new InfoFile();
                     networkSharing.Read(data, 0, data.Length);
                     info.Desserialize(data);
                     if (info.FileLenght == 0)
                         SendFile(info);
                     else 
                         GetFile(info);
+                    if(!string.IsNullOrEmpty(info.PrivateName))
+                    {
+                        server.PrivateMassage(User, info.PrivateName);
+                    }
+                    networkSharing.Flush();
+                    
                 }
             }
             catch (Exception ex)
@@ -117,20 +123,22 @@ namespace ServerChat
                     server.ListUser.Add("Получено : " + info.FileName);
                 });
                 int len = (int)info.FileLenght;
-                FileStream fs = new FileStream(User.FileName, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite, len);
+                FileStream fs = new FileStream(info.FileName, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite, len);
                 byte[] data;
                 int size;
                 do
                 {
-                    data = new byte[10000];
+                    data = new byte[1000000];
                     size = networkSharing.Read(data, 0, data.Length);
                     fs.Write(data, 0, size);
                     if (fs.Length == len) break;
                 } while (size > 0);
                 server.Dispatcher.Invoke(() => {
-                    server.ListUser.Add("Загружено : " + User.FileName);
+                    server.ListUser.Add("Загружено : " + info.FileName);
                 });
                 fs.Close();
+                User.Message = info.FileName;
+                server.BroadCastUser(User);
             }
 
             catch (Exception ex)
@@ -184,10 +192,10 @@ namespace ServerChat
         internal void Close()
         {
             server.RemoveConnection(User.ID);
-            if (networkStream != null)
-                networkStream.Close();
-            if (client != null)
-                client.Close();
+            networkStream?.Close();
+            networkSharing?.Close();
+            client?.Close();
+            sharing?.Close();
             
         }
 

@@ -163,6 +163,7 @@ namespace ServerChat
         protected internal void Disconnect()
         {
             tcpListener.Stop();
+            tcpListenerSharing.Stop();
             for (int i = 0; i < clients.Count; i++)
             {
                 clients[i].Close();

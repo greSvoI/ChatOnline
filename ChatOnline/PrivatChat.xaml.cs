@@ -1,4 +1,5 @@
 ﻿using ChatOnline;
+using ChatOnline.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,23 +21,18 @@ namespace ChatOnline
     /// </summary>
     public partial class PrivatChat : Window
     {
-        public ViewApplicationPrivate view;
+        public ViewApplicationPrivate viewPrivate;
+        
         public PrivatChat()
         {
             InitializeComponent();
-            DataContext = view = new ViewApplicationPrivate();
-        }
-
-        private void TextBox_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
+            ImageBrush imBrush = new ImageBrush()
             {
-                view.msg = textboxMsg.Text;
-                view.ListMmessage.Add(textboxMsg.Text);
-                textboxMsg.Clear();
-                view.Send();
-                 
-            }
+                ImageSource = new BitmapImage(new Uri("2.jpg", UriKind.Relative)),
+                Stretch = Stretch.Fill
+            };
+            this.Background = imBrush;
+            DataContext = viewPrivate = new ViewApplicationPrivate();
         }
     }
 }

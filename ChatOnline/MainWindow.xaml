@@ -71,9 +71,9 @@
                 </ListBox.ItemTemplate>
             </ListBox>
             <TextBox  Grid.Row="1"  Name="textMsg" TextWrapping="Wrap" Text="{Binding SendText, Mode=TwoWay}" AcceptsReturn="True" Background="Transparent">
-                <!--<TextBox.InputBindings>
+                <TextBox.InputBindings>
                     <KeyBinding Key="Enter" Command="{Binding Send}"/>
-                </TextBox.InputBindings>-->
+                </TextBox.InputBindings>
             </TextBox>
             <StackPanel Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Center" Background="Transparent">
                 <Button Margin="10 0 10 0" Content=" Send Message " Command="{Binding Send}"></Button>

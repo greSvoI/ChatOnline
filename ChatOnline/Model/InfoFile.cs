@@ -11,7 +11,7 @@ namespace ChatOnline.Model
     {
         public string FileName { get; set; }
 		public long FileLenght { get; set; } = 0;
-        public string PrivateName { get ; set; }
+		public string PrivateName { get; set; } = "";
 
         public byte[] Serialize()
 		{

@@ -18,14 +18,18 @@ namespace ChatOnline.Model
     {
         static TcpClient tcpclient;
         static TcpClient tcpSharing;
+
         static NetworkStream streamSharing;
         static NetworkStream stream;
+
         User temp_user = new User();
         readonly string ip = "127.0.0.1";
         readonly int portsharing =8005;
         readonly int portmsg = 8000;
+
         string fileName;
         string filePath;
+
         ViewApplication view;
         public User User { get; set; }
         TextBox box;
@@ -36,7 +40,9 @@ namespace ChatOnline.Model
             this.User = new User();
             this.User.Brush = new SolidColorBrush(Colors.LightCoral);
             tcpclient = new TcpClient();
+            tcpSharing = new TcpClient();
             User.TextDecorations = null;
+            
         }
         protected internal void Connect()
         {
@@ -94,29 +100,39 @@ namespace ChatOnline.Model
         }
         protected internal void ReceiveSharing()
         {
-            while (true)
+            try
             {
-                byte[] data = new byte[256];
-                InfoFile info = new InfoFile();
-
-                do
+                while (true)
                 {
-                    streamSharing.Read(data, 0, data.Length);
-                    info.Desserialize(data);
+                    byte[] data = new byte[256];
+                    InfoFile info = new InfoFile();
 
-                } while (streamSharing.DataAvailable);
+                    do
+                    {
+                        streamSharing.Read(data, 0, data.Length);
+                        info.Desserialize(data);
+                        int len = (int)info.FileLenght;
+                        int size = 0;
+                        FileStream fs = new FileStream(info.FileName, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite, len);
+                        do
+                        {
+                            data = new byte[1024000];
+                            size = streamSharing.Read(data, 0, data.Length);
+                            fs.Write(data, 0, size);
+                            if (fs.Length == len) break;
+
+                        } while (size > 0);
+                        fs.Close();
+                        streamSharing.Flush();
 
 
-                int len = (int)info.FileLenght;
-                FileStream fs = new FileStream(info.FileName, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite, len);
-                do
-                {
-                    data = new byte[10000];
-                    int size = streamSharing.Read(data, 0, data.Length);
-                    fs.Write(data, 0, size);
-                    if (fs.Length == len) break;
-                } while (true);
-                fs.Close();
+                    } while (streamSharing.DataAvailable);
+                }
+            }
+            catch (Exception ex)
+            {
+
+                Close();
             }
 
         }
@@ -142,11 +158,11 @@ namespace ChatOnline.Model
                 info.FileLenght = fs.Length;
 
                 byte[] data = info.Serialize();
-                stream.Write(data, 0, data.Length);
+                streamSharing.Write(data, 0, data.Length);
                 data = new byte[fs.Length];
                 fs.Read(data, 0, (int)fs.Length);
                 fs.Close();
-                stream.Write(data, 0, data.Length);
+                streamSharing.Write(data, 0, data.Length);
             }
             catch (Exception ex)
             {
@@ -175,43 +191,20 @@ namespace ChatOnline.Model
                 MessageBox.Show(ex.Message + "SendFile");
             }
         }
-        Thread thread;
+
+        //Запрос на загрузку файла
         protected internal void LoadFile()
         {
+
             InfoFile info = new InfoFile();
-            info.FileName = view.GetUser.FileName;
+            info.FileName = view.GetUser.Message;
             if (string.IsNullOrEmpty(info.FileName))
                 return;
             byte[] data = info.Serialize();
-            streamSharing.Write(data,0,data.Length);
+            streamSharing.Write(data, 0, data.Length);
+
         }
-        protected internal void Load()
-        {
-           
-           
-            //NetworkStream network = tcp.GetStream();
-
-
-            //byte[] data = User.Serialize();//Запрос файла
-            //network.Write(data, 0, data.Length);
-           
-            //data = new byte[256];
-            //network.Read(data,0,data.Length);//длина файла
-            //temp_user.Desserialize(data);
-
-            //int len = int.Parse(temp_user.Message);
-
-            //FileStream fs = new FileStream(User.FileName, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite, len);
-            //int size;
-            //do
-            //{
-            //    data = new byte[9999];
-            //    size = network.Read(data, 0, data.Length);
-            //    fs.Write(data, 0, size);
-            //    if (fs.Length == len) break;
-            //} while (size > 0);
-            //thread.Abort();
-        }
+        
         public void SendMsg()
         {
             User.Message = box.Text;
@@ -260,13 +253,14 @@ namespace ChatOnline.Model
 
                     if (temp_user.ConnectPrivate)
                     {
-                        if (view.PrivatChats.Any(x => x.view.privateName == temp_user.Name))
+                        if (view.PrivatChats.Any(x => x.viewPrivate.privateName == temp_user.Name))
                             view.MyDispatcher.Invoke(() =>
                             {
+                                
                                 foreach (var item in view.PrivatChats)
-
-                                    if (item.view.privateName == temp_user.Name)
-                                        item.view.ListMmessage.Add(temp_user.Message);
+                                    
+                                    if (item.viewPrivate.privateName == temp_user.Name)
+                                        item.viewPrivate.ListMmessage.Add(temp_user.Message);
                             });
 
 
@@ -275,16 +269,16 @@ namespace ChatOnline.Model
                             view.MyDispatcher.Invoke(() =>
                             {
                                 PrivatChat chat = new PrivatChat();
-                                chat.view.Name = view.UserName;
-                                chat.view.privateName = temp_user.Name;
-                                chat.view.user = temp_user;
-                                chat.view.stream = stream;
+                                chat.viewPrivate.Name = view.UserName;
+                                chat.viewPrivate.privateName = temp_user.Name;
+                                chat.viewPrivate.user = temp_user;
+                                chat.viewPrivate.stream = stream;
+                                chat.viewPrivate.streamSharing = streamSharing;
                                 chat.Title = "Владелец" + view.UserName + " => " + temp_user.Name;
-
                                 chat.Show();
                                 view.PrivatChats.Add(chat);
-                                if (string.IsNullOrEmpty(temp_user.Message))
-                                    chat.view.ListMmessage.Add(temp_user.Message);
+                                if (!string.IsNullOrEmpty(temp_user.Message))
+                                    chat.viewPrivate.ListMmessage.Add(temp_user.Message);
                             });
 
 
@@ -331,7 +325,9 @@ namespace ChatOnline.Model
         public void Close()
         {
             stream?.Close();
+            streamSharing?.Close();
             tcpclient?.Close();
+            tcpSharing?.Close();
         }
 
     }

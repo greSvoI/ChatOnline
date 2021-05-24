@@ -61,20 +61,12 @@ namespace ChatOnline.Properties {
         }
         
         /// <summary>
-        ///   Ищет локализованную строку, похожую на Address.
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
         /// </summary>
-        public static string Address {
+        public static System.Drawing.Bitmap background {
             get {
-                return ResourceManager.GetString("Address", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Title.
-        /// </summary>
-        public static string Title {
-            get {
-                return ResourceManager.GetString("Title", resourceCulture);
+                object obj = ResourceManager.GetObject("background", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
     }
