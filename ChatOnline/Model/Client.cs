@@ -174,7 +174,6 @@ namespace ChatOnline.Model
         {
             try
             {
-
                 InfoFile info = new InfoFile();
                 OpenFileDialog dialog = new OpenFileDialog();
                 if (dialog.ShowDialog() == true)

@@ -7,10 +7,6 @@
         mc:Ignorable="d"
         Title="{Binding UserName}" Height="450" Width="800" >
     <Window.Resources>
-        <Style TargetType="ListBox">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="FontFamily" Value="Technical Italic, Comic Sans MS, Arial"/>
-        </Style>
         <LinearGradientBrush x:Key="GrayBlueGardientBrush"  
                             StartPoint="0,0" EndPoint="1,1">
             <GradientStop Color="DarkCyan" Offset="0"/>
@@ -18,6 +14,52 @@
             <GradientStop Color="DarkCyan" Offset="1"/>
 
         </LinearGradientBrush>
+        <Style TargetType="{x:Type ContextMenu}">
+            <Setter Property="SnapsToDevicePixels"
+          Value="True" />
+            <Setter Property="OverridesDefaultStyle"
+          Value="True" />
+            <Setter Property="Grid.IsSharedSizeScope"
+          Value="True" />
+            <Setter Property="HasDropShadow"
+          Value="True" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ContextMenu}">
+                        <Border x:Name="Border"
+                Background="{StaticResource GrayBlueGardientBrush}"
+                BorderThickness="1">
+                            <Border.BorderBrush>
+                                <SolidColorBrush Color="White" />
+                            </Border.BorderBrush>
+                            <StackPanel IsItemsHost="True"
+                      KeyboardNavigation.DirectionalNavigation="Cycle" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="HasDropShadow"
+                   Value="true">
+                                <Setter TargetName="Border"
+                    Property="Padding"
+                    Value="0,5,0,5" />
+                                <Setter TargetName="Border"
+                    Property="CornerRadius"
+                    Value="10" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!--<Style TargetType="ContextMenu">
+            <Setter Property="BorderBrush" Value="DarkCyan"/>
+            <Setter Property="Background" Value="{StaticResource GrayBlueGardientBrush}"/>
+            
+        </Style>-->
+        <Style TargetType="ListBox">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="FontFamily" Value="Technical Italic, Comic Sans MS, Arial"/>
+        </Style>
+        
         <Style TargetType="{x:Type Button}">
             <Setter Property="Background" Value="{StaticResource GrayBlueGardientBrush}"/>
             <Setter Property="FontFamily" Value="Technical Italic, Comic Sans MS, Arial"/>
@@ -42,8 +84,8 @@
             <ListBox Name="listBoxUser" ItemsSource="{Binding UserBox}" SelectedItem="{Binding SelectUser}">
                 <ListBox.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="Send file" Command="{Binding SendOne}"/>
-                        <MenuItem Header="Private chat" Command="{Binding PrivateMsg}"/>
+                        <MenuItem Header="Отправить файл" Command="{Binding SendOne}"/>
+                        <MenuItem Header="Приватный чат" Command="{Binding PrivateMsg}"/>
                     </ContextMenu>
                 </ListBox.ContextMenu>
             </ListBox>
@@ -56,7 +98,8 @@
             <ListBox ItemsSource="{Binding MsgBox}" SelectedItem="{Binding GetUser}" Background="Transparent">
                 <ListBox.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="Send File" Command="{Binding SendToAll}"/>
+                        <MenuItem Header="Отправить файл" Command="{Binding SendToAll}"/>
+                        <MenuItem Header="Скачать файл" Command="{Binding ClickLoad}"/>
                     </ContextMenu>
                 </ListBox.ContextMenu>
                 <ListBox.ItemTemplate>
@@ -76,8 +119,8 @@
                 </TextBox.InputBindings>
             </TextBox>
             <StackPanel Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Center" Background="Transparent">
-                <Button Margin="10 0 10 0" Content=" Send Message " Command="{Binding Send}"></Button>
-                <Button Margin="10 20 10 0" Content="Load File" Command="{Binding ClickLoad}"></Button>
+                <!--<Button Margin="10 0 10 0" Content=" Send Message " Command="{Binding Send}"></Button>
+                <Button Margin="10 20 10 0" Content="Load File" Command="{Binding ClickLoad}"></Button>-->
             </StackPanel>
         </Grid>
         

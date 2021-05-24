@@ -40,13 +40,22 @@ namespace ServerChat
                     networkSharing.Read(data, 0, data.Length);
                     info.Desserialize(data);
                     if (info.FileLenght == 0)
+                    {
                         SendFile(info);
-                    else 
+                        server.Dispatcher.Invoke(() =>
+                        {
+                            server.ListUser.Add("Скачал : " + User.Name + "\r\n" + info.FileName);
+                        });
+                    }
+                    else
+                    { 
                         GetFile(info);
+                    }
                     if(!string.IsNullOrEmpty(info.PrivateName))
                     {
                         server.PrivateMassage(User, info.PrivateName);
                     }
+                    else server.BroadCastUser(User);
                     networkSharing.Flush();
                     
                 }
@@ -138,7 +147,7 @@ namespace ServerChat
                 });
                 fs.Close();
                 User.Message = info.FileName;
-                server.BroadCastUser(User);
+                
             }
 
             catch (Exception ex)
@@ -151,6 +160,8 @@ namespace ServerChat
         {
             try
             {
+                if (!File.Exists(info.FileName))
+                    return;
                 FileStream fs = new FileStream(info.FileName, FileMode.Open, FileAccess.Read);
                 info.FileLenght = fs.Length;
                 byte[] data = info.Serialize();
@@ -164,7 +175,7 @@ namespace ServerChat
             }
             catch (Exception ex)
             {
-
+                Close();
                 MessageBox.Show(ex.Message + "SendFile");
             }
         }
